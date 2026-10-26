@@ -134,3 +134,7 @@ body.view-open .view-panel { transform: none; }
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after { transition: none !important; animation: none !important; }
 }
+
+/* com WebGL, o canvas desenha as peças; os botões ficam para teclado e leitor de tela */
+.rail-gl { position: absolute; z-index: 20; pointer-events: none; }
+.rail.gl .hang img { visibility: hidden; }

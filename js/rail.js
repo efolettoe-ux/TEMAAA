@@ -7,12 +7,15 @@
      - a peça balança como um pêndulo, empurrada pelo deslizar do gancho,
        pelo cursor que passa, por uma brisa leve e quando você a arrasta;
      - a barra atrasa em relação aos ombros, o que dá o ar de tecido.
-   Barras vizinhas não se atravessam: uma peça arremessada bate na próxima. */
+   O giro também torce: os ombros viram primeiro e a barra vem depois, passa
+   do ponto e volta. Barras vizinhas não se atravessam: uma peça arremessada
+   bate na próxima. Com WebGL, cada foto vira uma superfície curva em 3D
+   (js/rail-gl.js); sem WebGL, as mesmas fotos se mexem por CSS. */
 (function () {
   "use strict";
 
   var PRODUCTS = window.PRODUCTS;
-  var N = PRODUCTS.length, SUB = 1 / 120, LOW_STOCK = 3;
+  var N = PRODUCTS.length, SUB = 1 / 120, LOW_STOCK = 3, HALF_PI = Math.PI / 2;
   var FABRIC = { "Camiseta": "Algodão penteado premium, 180 g/m²", "Moletom": "Moletom 3 cabos, 310 g/m²" };
 
   function $(id) { return document.getElementById(id); }
@@ -40,7 +43,7 @@
     return {
       i: i, p: p, el: el, sw: el.querySelector(".swing"), front: front, side: side,
       x: 0, vx: 0, tx: 0, w: 0, py: 0, vy: 0, delay: 0,
-      t: 0, vt: 0, a: 0, va: 0, b: 0, vb: 0, lift: 0, vl: 0, yaw: 0,
+      t: 0, vt: 0, th: 0, vth: 0, a: 0, va: 0, b: 0, vb: 0, lift: 0, vl: 0, yaw: 0,
       face: false, hidden: false, Wf: 0, Ws: 0
     };
   });
@@ -62,6 +65,7 @@
       g.front.style.width = g.Wf + "px";
       g.side.style.width = g.Ws + "px";
     });
+    if (gl) gl.resize(geo);
   }
 
   /* Cada peça quer a sua vaga, alargada até a largura da frente conforme
@@ -89,7 +93,7 @@
 
   function settleAll() {
     G.forEach(function (g) {
-      g.t = g.i === active ? 1 : 0; g.vt = 0;
+      g.t = g.th = g.i === active ? 1 : 0; g.vt = g.vth = 0;
       g.face = g.t > 0.5;
       g.a = g.va = g.b = g.vb = 0;
       g.lift = g.i === active && !small.matches ? 1 : 0; g.vl = 0;
@@ -116,10 +120,16 @@
       else { var ay = 240 * -g.py - 20 * g.vy; g.vy += ay * dt; g.py += g.vy * dt; }
 
       /* virar de frente: um pouco subamortecido, passa do ponto e volta */
-      var at = 140 * ((on ? 1 : 0) - g.t) - (on ? 21 : 16) * g.vt;
+      var at = 230 * ((on ? 1 : 0) - g.t) - (on ? 26 : 21) * g.vt;
       g.vt += at * dt; g.t = clamp(g.t + g.vt * dt, -0.12, 1.1);
-      if (!g.face && g.t > 0.22) g.face = true;
-      else if (g.face && g.t < 0.16) g.face = false;
+      /* a barra segue os ombros com atraso, por uma mola mais solta */
+      var ath = 150 * (g.t - g.th) - 7 * g.vth;
+      g.vth += ath * dt; g.th = clamp(g.th + g.vth * dt, -0.2, 1.2);
+      /* Qual foto aparece: troca de uma vez, no ângulo em que a frente girada
+         fica tão estreita quanto o perfil, com folga para não piscar. */
+      var mean = 1 - 0.5 * (g.t + g.th), swap = Math.acos(clamp(g.Ws / g.Wf, 0, 1)) / HALF_PI;
+      if (!g.face && mean < swap - 0.03) g.face = true;
+      else if (g.face && mean > swap + 0.03) g.face = false;
 
       /* aproxima de você a peça escolhida */
       var al = 120 * ((on && !small.matches ? 1 : 0) - g.lift) - 20 * g.vl;
@@ -180,7 +190,7 @@
     for (var i = 0; i < N; i++) {
       var g = G[i];
       if (Math.abs(g.vx) > 0.3 || Math.abs(g.tx - g.x) > 0.3 || Math.abs(g.vy) > 0.3 || g.delay > 0 || Math.abs(g.py) > 0.3) return true;
-      if (Math.abs(g.vt) > 0.003 || Math.abs((i === active ? 1 : 0) - g.t) > 0.002) return true;
+      if (Math.abs(g.vt) > 0.003 || Math.abs(g.vth) > 0.003 || Math.abs((i === active ? 1 : 0) - g.th) > 0.002) return true;
       if (Math.abs(g.va) > 0.002 || Math.abs(g.a) > 0.002 || Math.abs(g.vb) > 0.002 || Math.abs(g.vl) > 0.003) return true;
     }
     return false;
@@ -203,7 +213,13 @@
   }
 
   /* ---------------- Desenho ---------------- */
+  var gl = null;
   function draw() {
+    if (gl && gl.ready) {
+      G.forEach(function (g) { g.el.style.transform = "translate3d(" + (g.x - g.Wf / 2).toFixed(2) + "px," + g.py.toFixed(2) + "px,0)"; });
+      gl.render(G, active, clock);
+      return;
+    }
     G.forEach(function (g) {
       var f = clamp(g.t, -0.1, 1.1);
       g.el.style.transform = "translate3d(" + (g.x - g.Wf / 2).toFixed(2) + "px," + g.py.toFixed(2) + "px,0)";
@@ -455,4 +471,8 @@
   updateReadout();
   draw();
   kick();
+  if (window.RailGL) {
+    gl = window.RailGL(rail, G, reduced);
+    if (gl) gl.load().then(function () { gl.resize(geo); rail.classList.add("gl"); draw(); kick(); });
+  }
 })();
