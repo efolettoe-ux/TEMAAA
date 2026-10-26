@@ -23,7 +23,7 @@
     "uniform vec2 uTurn;",          // ângulo nos ombros e na barra (rad, 0 = de frente)
     "uniform vec2 uSwing;",         // balanço nos ombros e na barra (rad)
     "uniform float uPlane;",        // 0 = frente, 1 = perfil
-    "uniform float uBulge, uFlutter, uTime, uShadow, uWallZ;",
+    "uniform float uBulge, uFlutter, uTime, uShadow, uWallZ, uShadeK;",
     "uniform vec3 uCam;",           // centro da perspectiva (x, y) e distância
     "uniform vec4 uView;",          // origem do canvas no rail (x, y) e tamanho (w, h)",
     "out vec2 vUV; out float vShade;",
@@ -54,7 +54,7 @@
     "  vec3 n = normalize(cross(surf(aUV + vec2(0.01, 0.0)) - p, surf(aUV + vec2(0.0, 0.01)) - p));",
     "  if (n.z < 0.0) n = -n;",
     "  vec3 L = normalize(vec3(-0.3, -0.35, 0.89));",
-    "  vShade = clamp(dot(n, L) / L.z, 0.55, 1.08);",
+    "  vShade = 1.0 - uShadeK * (1.0 - clamp(dot(n, L) / L.z, 0.45, 1.06));",
     "  gl_Position = project(p);",
     "}"
   ].join("\n");
@@ -75,7 +75,7 @@
     "}"
   ].join("\n");
 
-  var NAMES = ["uHook", "uSize", "uTurn", "uSwing", "uPlane", "uBulge", "uFlutter", "uTime", "uShadow", "uWallZ", "uCam", "uView", "uTex"];
+  var NAMES = ["uHook", "uSize", "uTurn", "uSwing", "uPlane", "uBulge", "uFlutter", "uTime", "uShadow", "uWallZ", "uShadeK", "uCam", "uView", "uTex"];
 
   window.RailGL = function (rail, G, reduced) {
     var canvas = document.createElement("canvas");
@@ -153,6 +153,16 @@
       for (i = 0; i < w * h; i++) { d.data[i * 4] = d.data[i * 4 + 1] = d.data[i * 4 + 2] = 0; d.data[i * 4 + 3] = a[i]; }
       return d;
     }
+    /* Quanto a luz escurece a peça de lado. Em tecido claro a mesma sombra
+       vira cinza sujo, então peças claras recebem bem menos. */
+    function shadeStrength(im) {
+      var c = document.createElement("canvas"); c.width = c.height = 24;
+      var x = c.getContext("2d"); x.drawImage(im, 0, 0, 24, 24);
+      var d = x.getImageData(0, 0, 24, 24).data, sum = 0, n = 0;
+      for (var i = 0; i < d.length; i += 4) if (d[i + 3] > 200) { sum += (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255; n++; }
+      var luma = n ? sum / n : 0.5, t = Math.min(1, Math.max(0, (luma - 0.35) / 0.5));
+      return 0.6 - 0.42 * t * t * (3 - 2 * t);
+    }
     function decoded(im) {
       if (im.complete && im.naturalWidth) return Promise.resolve();
       return im.decode ? im.decode().catch(function () {}) : new Promise(function (r) { im.onload = im.onerror = r; });
@@ -166,6 +176,7 @@
       return Promise.all(ims.map(decoded)).then(function () {
         if (ims.some(function (im) { return !im.naturalWidth; })) throw new Error("foto não carregou");
         G.forEach(function (g) {
+          g.shadeK = shadeStrength(g.front);
           g.tex = { front: texture(g.front), side: texture(g.side), frontSoft: texture(soft(g.front)), sideSoft: texture(soft(g.side)) };
         });
         rail.appendChild(canvas);
@@ -195,6 +206,7 @@
       gl.uniform1f(U.uTime, clock);
       gl.uniform1f(U.uPlane, face ? 0 : 1);
       gl.uniform1f(U.uBulge, g.Hs * 0.05);
+      gl.uniform1f(U.uShadeK, shadow ? 0 : g.shadeK);
       gl.uniform2f(U.uSize, face ? g.Wf : g.Ws, g.Hs);
       gl.bindTexture(gl.TEXTURE_2D, face ? (shadow ? g.tex.frontSoft : g.tex.front) : (shadow ? g.tex.sideSoft : g.tex.side));
       var m = face ? meshes.front : meshes.side;
