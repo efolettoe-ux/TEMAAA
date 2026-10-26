@@ -54,8 +54,9 @@ a { color: inherit; }
 /* ---------------- O cano ---------------- */
 .rail { position: relative; z-index: 1; width: var(--railw); height: calc(var(--hang) + 6px); touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: pointer; }
 .rail.grabbing { cursor: grabbing; }
-.rail::before { content: ""; position: absolute; z-index: 40; top: 15px; left: -56px; right: -56px; height: 10px; border-radius: 5px; background: linear-gradient(#fbfbfc 0%, #d6d8dc 22%, #a3a6ac 48%, #7d8087 62%, #c9cbcf 84%, #eceef0 100%); box-shadow: 0 8px 14px -8px #14161e73; }
-.bracket { position: absolute; z-index: 41; top: 2px; width: 12px; height: 34px; border-radius: 3px; background: linear-gradient(90deg, #8b8e95, #f2f3f5 38%, #c2c5ca 64%, #83868d); box-shadow: 0 4px 8px -2px #14161e40; }
+/* o topo do cano encosta na curva de dentro dos ganchos (0,9% da altura da foto); os ganchos ficam na frente */
+.rail::before { content: ""; position: absolute; z-index: 5; top: calc(6px + var(--hang) * .009); left: -56px; right: -56px; height: 8px; border-radius: 4px; background: linear-gradient(#fbfbfc 0%, #d6d8dc 22%, #a3a6ac 48%, #7d8087 62%, #c9cbcf 84%, #eceef0 100%); box-shadow: 0 8px 14px -8px #14161e73; }
+.bracket { position: absolute; z-index: 41; top: calc(var(--hang) * .009 - 7px); width: 12px; height: 34px; border-radius: 3px; background: linear-gradient(90deg, #8b8e95, #f2f3f5 38%, #c2c5ca 64%, #83868d); box-shadow: 0 4px 8px -2px #14161e40; }
 .bracket--l { left: -64px; }
 .bracket--r { right: -64px; }
 

@@ -20,6 +20,7 @@
     "in vec2 aUV;",
     "uniform vec3 uHook;",          // gancho, em px do rail (z para você)
     "uniform vec2 uSize;",          // largura e altura da foto, em px
+    "uniform float uApex;",         // onde o gancho apoia no cano, em fração da altura da foto
     "uniform vec2 uTurn;",          // ângulo nos ombros e na barra (rad, 0 = de frente)
     "uniform vec2 uSwing;",         // balanço nos ombros e na barra (rad)
     "uniform float uPlane;",        // 0 = frente; ±1 = perfil, com o sinal do sentido do giro
@@ -28,7 +29,7 @@
     "uniform vec4 uView;",          // origem do canvas no rail (x, y) e tamanho (w, h)",
     "out vec2 vUV; out float vShade;",
     "vec3 surf(vec2 uv) {",
-    "  float x = (uv.x - 0.5) * uSize.x, y = uv.y * uSize.y;",
+    "  float x = (uv.x - 0.5) * uSize.x, y = (uv.y - uApex) * uSize.y;",
     "  float k = smoothstep(0.1, 1.0, uv.y);",
     "  float phi = mix(uTurn.x, uTurn.y, k) - uPlane * 1.5707963;",
     "  float body = smoothstep(0.08, 0.22, uv.y) * (1.0 - 0.35 * uv.y);",
@@ -68,14 +69,18 @@
     "void main() {",
     "  vec4 c = texture(uTex, vUV);",
     "  if (uShadow > 0.5) {",
-    "    float edge = smoothstep(0.0, 0.06, 1.0 - vUV.y) * smoothstep(0.0, 0.05, vUV.x) * smoothstep(0.0, 0.05, 1.0 - vUV.x);",
+    "    float edge = smoothstep(0.04, 0.14, vUV.y) * smoothstep(0.0, 0.06, 1.0 - vUV.y) * smoothstep(0.0, 0.05, vUV.x) * smoothstep(0.0, 0.05, 1.0 - vUV.x);",
     "    o = vec4(0.04, 0.05, 0.08, 1.0) * c.a * edge * 0.16; return;",
     "  }",
     "  o = vec4(c.rgb * vShade, c.a);",
     "}"
   ].join("\n");
 
-  var NAMES = ["uHook", "uSize", "uTurn", "uSwing", "uPlane", "uBulge", "uFlutter", "uTime", "uShadow", "uWallZ", "uShadeK", "uCam", "uView", "uTex"];
+  /* Medido nas fotos: a parte de dentro da curva do gancho fica a 0,9% do
+     topo da foto. O cano passa exatamente ali (css: .rail::before). */
+  var APEX = 0.009;
+
+  var NAMES = ["uHook", "uSize", "uTurn", "uSwing", "uPlane", "uBulge", "uFlutter", "uTime", "uShadow", "uWallZ", "uShadeK", "uApex", "uCam", "uView", "uTex"];
 
   window.RailGL = function (rail, G, reduced) {
     var canvas = document.createElement("canvas");
@@ -200,7 +205,9 @@
       var dir = g.p.turn || 1;
       var top = dir * (1 - g.t) * Math.PI / 2 + g.yaw * Math.PI / 180, hem = dir * (1 - g.th) * Math.PI / 2 + g.yaw * 0.6 * Math.PI / 180;
       var motion = Math.abs(g.vt) + Math.abs(g.vth) + Math.abs(g.va) * 2;
-      gl.uniform3f(U.uHook, g.x, 6 + g.py, g.lift * h * 0.09);
+      /* o ponto de apoio fica em cima do cano; é dele que a peça gira e balança */
+      gl.uniform3f(U.uHook, g.x, 6 + APEX * h + g.py, g.lift * h * 0.09);
+      gl.uniform1f(U.uApex, APEX);
       gl.uniform2f(U.uTurn, top, hem);
       gl.uniform2f(U.uSwing, g.a, g.b);
       gl.uniform1f(U.uFlutter, reduced ? 0 : Math.min(1, motion * 0.15) * h * 0.012);
