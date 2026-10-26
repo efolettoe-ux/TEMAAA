@@ -363,7 +363,7 @@
       if (i < 0) return;
       /* toque: o primeiro vira a peça, o segundo abre */
       if (!finePointer.matches && self.active !== i) { self.setActive(i); return; }
-      self.show(i);
+      self.show(i, e.detail === 0);
     });
     G.forEach(function (g, i) {
       g.el.addEventListener("focus", function () {
@@ -503,10 +503,11 @@
     this.draw();
   };
 
-  Arara.prototype.show = function (i) {
+  Arara.prototype.show = function (i, byKeyboard) {
     var self = this;
     if (this.open) return;
     this.open = true;
+    this.byKeyboard = !!byKeyboard;
     this.fill(i);
     this.setActive(i); this.markAway(i);
     this.lastFocus = document.activeElement;
@@ -526,7 +527,9 @@
     setTimeout(function () { if (!self.open) self.view.hidden = true; }, reduced ? 0 : 450);
     this.markAway(-1);
     if (!finePointer.matches) this.setActive(-1);
-    this.G[this.current].el.focus({ preventScroll: true });
+    /* o foco volta para a peça só se ela foi aberta pelo teclado */
+    if (this.byKeyboard) this.G[this.current].el.focus({ preventScroll: true });
+    else if (document.activeElement && this.view.contains(document.activeElement)) document.activeElement.blur();
     this.kick();
   };
 

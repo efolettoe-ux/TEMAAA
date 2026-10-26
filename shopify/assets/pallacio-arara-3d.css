@@ -64,7 +64,8 @@
 
 /* ---------------- As peças ---------------- */
 .pa3d__hang { position: absolute; top: 6px; left: 0; padding: 0; border: 0; background: none; pointer-events: none; will-change: transform; }
-.pa3d__hang:focus-visible { outline: none; }
+/* o tema contorna todo botão focado; nas peças, o foco aparece só pelo teclado, na própria foto */
+.pa3d .pa3d__hang:focus, .pa3d .pa3d__hang:focus-visible { outline: none !important; box-shadow: none !important; }
 .pa3d__hang:focus-visible .pa3d__front, .pa3d__hang:focus-visible .pa3d__side { outline: 2px dashed var(--pa3d-accent); outline-offset: 4px; }
 .pa3d__swing { position: absolute; inset: 0; transform-origin: 50% 0; perspective: 900px; filter: drop-shadow(0 16px 14px #14161e26); }
 .pa3d__hang img { position: absolute; top: 0; left: 50%; height: 100%; max-width: none; transform-origin: 50% 0; -webkit-user-drag: none; user-select: none; }
