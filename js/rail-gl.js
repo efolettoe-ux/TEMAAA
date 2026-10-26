@@ -23,7 +23,7 @@
     "uniform vec2 uTurn;",          // ângulo nos ombros e na barra (rad, 0 = de frente)
     "uniform vec2 uSwing;",         // balanço nos ombros e na barra (rad)
     "uniform float uPlane;",        // 0 = frente; ±1 = perfil, com o sinal do sentido do giro
-    "uniform float uBulge, uFlutter, uTime, uShadow, uWallZ, uShadeK, uFlip;",
+    "uniform float uBulge, uFlutter, uTime, uShadow, uWallZ, uShadeK;",
     "uniform vec3 uCam;",           // centro da perspectiva (x, y) e distância
     "uniform vec4 uView;",          // origem do canvas no rail (x, y) e tamanho (w, h)",
     "out vec2 vUV; out float vShade;",
@@ -45,7 +45,7 @@
     "  return vec4(s.x / uView.z * 2.0 - 1.0, 1.0 - s.y / uView.w * 2.0, 0.0, 1.0);",
     "}",
     "void main() {",
-    "  vUV = vec2(uFlip > 0.5 ? 1.0 - aUV.x : aUV.x, aUV.y);",
+    "  vUV = aUV;",
     "  vec3 p = surf(aUV);",
     "  if (uShadow > 0.5) {",
     "    p.xy += vec2(0.22, 0.3) * (p.z - uWallZ); p.z = uWallZ;",
@@ -75,7 +75,7 @@
     "}"
   ].join("\n");
 
-  var NAMES = ["uHook", "uSize", "uTurn", "uSwing", "uPlane", "uBulge", "uFlutter", "uTime", "uShadow", "uWallZ", "uShadeK", "uFlip", "uCam", "uView", "uTex"];
+  var NAMES = ["uHook", "uSize", "uTurn", "uSwing", "uPlane", "uBulge", "uFlutter", "uTime", "uShadow", "uWallZ", "uShadeK", "uCam", "uView", "uTex"];
 
   window.RailGL = function (rail, G, reduced) {
     var canvas = document.createElement("canvas");
@@ -206,7 +206,6 @@
       gl.uniform1f(U.uFlutter, reduced ? 0 : Math.min(1, motion * 0.15) * h * 0.012);
       gl.uniform1f(U.uTime, clock);
       gl.uniform1f(U.uPlane, face ? 0 : dir);
-      gl.uniform1f(U.uFlip, !face && g.p.mirrorSide ? 1 : 0);
       gl.uniform1f(U.uBulge, g.Hs * 0.05);
       gl.uniform1f(U.uShadeK, shadow ? 0 : g.shadeK);
       gl.uniform2f(U.uSize, face ? g.Wf : g.Ws, g.Hs);
