@@ -272,7 +272,20 @@
       if (hand.on && now > hand.t) hand.vx += (clamp((p[0] - hand.x) / ((now - hand.t) / 1000), -2600, 2600) - hand.vx) * 0.5;
       hand.on = true; hand.x = p[0]; hand.y = p[1]; hand.t = now;
     }
-    if (down && !grab && !reduced && down.i >= 0 && Math.hypot(e.clientX - down.cx, e.clientY - down.cy) > 7) {
+    /* No toque, deslizar o dedo pela arara faz o papel do mouse: a peça sob o
+       dedo vira de frente, como quem passa a mão pelas roupas numa loja. */
+    if (down && e.pointerType !== "mouse" && (down.scrub || Math.abs(e.clientX - down.cx) > 7)) {
+      if (!down.scrub) { down.scrub = true; try { rail.setPointerCapture(e.pointerId); } catch (err) {} }
+      /* cada peça tem uma faixa igual da largura, assim a peça virada (larga)
+         não segura o dedo e cada uma vira na sua vez */
+      var was = active, f = clamp(p[0] / geo.w, 0, 0.9999) * N;
+      setActive(Math.floor(f));
+      yawAim = (f % 1 - 0.5) * 20;
+      if (active !== was && navigator.vibrate) try { navigator.vibrate(6); } catch (err) {}
+      kick();
+      return;
+    }
+    if (down && !grab && !reduced && down.i >= 0 && e.pointerType === "mouse" && Math.hypot(e.clientX - down.cx, e.clientY - down.cy) > 7) {
       grab = { g: G[down.i], x: p[0], y: p[1] };
       rail.classList.add("grabbing");
       try { rail.setPointerCapture(e.pointerId); } catch (err) {}
@@ -289,6 +302,7 @@
     down = { cx: e.clientX, cy: e.clientY, i: hitTest(railXY(e)[0]) };
   });
   function release() {
+    if (down && down.scrub) { suppressClick = true; setTimeout(function () { suppressClick = false; }, 0); yawAim = 0; kick(); }
     down = null;
     if (grab) {
       grab = null; suppressClick = true; rail.classList.remove("grabbing");
@@ -333,7 +347,7 @@
   function updateReadout() {
     if (active < 0) {
       $("readout-name").textContent = "A arara";
-      $("readout-sub").textContent = "Toque numa peça para virá-la";
+      $("readout-sub").textContent = "Deslize o dedo pela arara para virar as peças";
       readoutBtn.hidden = true;
       return;
     }
