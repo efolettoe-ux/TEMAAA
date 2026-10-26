@@ -1,0 +1,145 @@
+/* PALLACIO: Arara 3D. Tudo prefixado com .pa3d para não vazar no tema. */
+.pa3d, .pa3d__view {
+  --pa3d-bg: #ffffff;
+  --pa3d-ink: #0b0b0b;
+  --pa3d-ink-2: #55575c;
+  --pa3d-line: #16324f22;
+  --pa3d-navy: #16324f;
+  --pa3d-accent: #1f5faf;
+  --pa3d-panel: #ffffff;
+  --pa3d-ease: cubic-bezier(.16, 1, .3, 1);
+}
+.pa3d {
+  --pa3d-h-desk: 440px;
+  --pa3d-h-mob: 320px;
+  --n: 7;
+  /* altura de uma peça pendurada e largura do cano */
+  --hang: min(52vh, var(--pa3d-h-desk), calc((100vw - 200px) / (var(--n) * .372)));
+  --railw: calc(var(--hang) * var(--n) * .372);
+  position: relative;
+  overflow: hidden;
+  background: var(--pa3d-bg);
+  color: var(--pa3d-ink);
+  padding-block: var(--pa3d-pt, 40px) var(--pa3d-pb, 40px);
+}
+.pa3d * { box-sizing: border-box; }
+.pa3d__head { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; max-width: 1440px; margin: 0 auto; padding: 0 clamp(16px, 3.2vw, 48px); }
+.pa3d__title { margin: 0; }
+.pa3d__caps { margin: 0; font-size: 11.5px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--pa3d-ink-2); }
+.pa3d__rack { display: grid; place-items: center; padding: 48px 0 40px; }
+.pa3d__foot { display: flex; justify-content: center; padding: 0 16px; text-align: center; }
+.pa3d__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------------- O cano ---------------- */
+.pa3d__rail { --rod: 11px; --rod-top: calc(6px + var(--hang) * .009); --reach: 64px;
+  position: relative; z-index: 1; width: var(--railw); height: calc(var(--hang) + 6px);
+  touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: pointer;
+  opacity: 0; transition: opacity .4s ease; }
+.pa3d.is-ready .pa3d__rail { opacity: 1; }
+.pa3d__rail.is-grabbing { cursor: grabbing; }
+/* O topo do cano encosta na curva de dentro dos ganchos (0,9% da altura da
+   foto, ver APEX no pallacio-arara-3d-gl.js); os ganchos ficam na frente dele. */
+.pa3d__rod { position: absolute; z-index: 5; top: var(--rod-top); left: calc(-1 * var(--reach)); right: calc(-1 * var(--reach)); height: var(--rod); border-radius: calc(var(--rod) / 2);
+  background:
+    linear-gradient(90deg, #ffffff00 0%, #ffffff59 9%, #ffffff00 18%, #0000 30%, #00000038 44%, #0000004d 52%, #00000026 60%, #0000 72%, #ffffff4d 86%, #ffffff00 94%),
+    linear-gradient(#e9ebee 0%, #ffffff 12%, #b9bdc3 26%, #4a4e55 46%, #2b2e33 54%, #6d7178 66%, #d7dade 82%, #f3f4f6 90%, #9a9ea5 100%);
+  box-shadow: 0 7px 9px -5px #14161e47, 0 16px 22px -12px #14161e2e; }
+.pa3d__rod::after { content: ""; position: absolute; left: 1.5%; right: 1.5%; top: 18%; height: 1.5px; border-radius: 1px; background: linear-gradient(90deg, #fff0, #fffc 20%, #fff 50%, #fffc 80%, #fff0); }
+.pa3d__mount { position: absolute; z-index: 41; top: calc(var(--rod-top) + var(--rod) / 2 - 26px); width: 24px; height: 52px; border-radius: 5px;
+  background: linear-gradient(90deg, #c9ccd1, #f4f5f7 30%, #e2e4e8 60%, #b6b9bf);
+  box-shadow: inset 0 0 0 1px #ffffff80, inset 0 -1px 0 1px #00000014, 0 3px 6px -1px #14161e40, 0 10px 18px -8px #14161e33; }
+.pa3d__mount::before, .pa3d__mount::after { content: ""; position: absolute; left: 50%; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fdfdfe, #a9adb3 55%, #6c7077); box-shadow: 0 1px 1px #0000002e, inset 0 0 0 .5px #0000004d; }
+.pa3d__mount::before { top: 6px; }
+.pa3d__mount::after { bottom: 6px; }
+.pa3d__socket { position: absolute; top: 50%; width: 20px; height: 22px; margin-top: -11px; border-radius: 3px;
+  background:
+    linear-gradient(90deg, #0000 0 18%, #0000002e 19% 22%, #0000 23% 77%, #0000002e 78% 81%, #0000 82%),
+    linear-gradient(#f4f5f7 0%, #ffffff 14%, #c3c6cc 32%, #63676e 50%, #8b8f96 64%, #e3e5e8 84%, #a4a8ae 100%);
+  box-shadow: 0 3px 5px -2px #14161e4d; }
+.pa3d__mount--l { left: calc(-1 * var(--reach) - 22px); }
+.pa3d__mount--l .pa3d__socket { left: 18px; }
+.pa3d__mount--r { right: calc(-1 * var(--reach) - 22px); }
+.pa3d__mount--r .pa3d__socket { right: 18px; }
+
+/* ---------------- As peças ---------------- */
+.pa3d__hang { position: absolute; top: 6px; left: 0; padding: 0; border: 0; background: none; pointer-events: none; will-change: transform; }
+.pa3d__hang:focus-visible { outline: none; }
+.pa3d__hang:focus-visible .pa3d__front, .pa3d__hang:focus-visible .pa3d__side { outline: 2px dashed var(--pa3d-accent); outline-offset: 4px; }
+.pa3d__swing { position: absolute; inset: 0; transform-origin: 50% 0; perspective: 900px; filter: drop-shadow(0 16px 14px #14161e26); }
+.pa3d__hang img { position: absolute; top: 0; left: 50%; height: 100%; max-width: none; transform-origin: 50% 0; -webkit-user-drag: none; user-select: none; }
+.pa3d__front { opacity: 0; }
+.pa3d__hang.is-away { opacity: 0; }
+/* com WebGL, o canvas desenha as peças; os botões ficam para teclado e leitor de tela */
+.pa3d .rail-gl { position: absolute; z-index: 20; pointer-events: none; }
+.pa3d__rail.is-gl .pa3d__hang img { visibility: hidden; }
+
+.pa3d__readout { display: none; }
+
+/* ---------------- Botões ---------------- */
+.pa3d__btn { display: inline-flex; justify-content: center; align-items: center; gap: 10px; height: 52px; padding: 0 26px; border: 0; border-radius: 0;
+  background: var(--pa3d-navy); color: #fff; font: inherit; font-size: 12px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background .2s, transform .2s; }
+.pa3d__btn:hover { background: var(--pa3d-accent); }
+.pa3d__btn:active { transform: translateY(1px); }
+.pa3d__btn[disabled] { background: #e6e1d6; color: var(--pa3d-ink-2); pointer-events: none; }
+
+/* ---------------- Peça aberta ---------------- */
+html.pa3d-lock { overflow: hidden; }
+.pa3d__view { position: fixed; inset: 0; z-index: 9999; display: grid; grid-template-columns: 1.25fr minmax(360px, 1fr); color: var(--pa3d-ink); }
+.pa3d__view[hidden] { display: none; }
+.pa3d__stage { position: relative; display: grid; place-items: center; overflow: hidden; background: #fffffff0; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); opacity: 0; transition: opacity .45s var(--pa3d-ease); }
+.pa3d__view.is-open .pa3d__stage { opacity: 1; }
+.pa3d__stage::before { content: ""; position: absolute; top: 9vh; left: 12%; right: 12%; height: 6px; border-radius: 3px; background: linear-gradient(#fbfbfc, #a3a6ac 55%, #d9dbde); box-shadow: 0 6px 10px -6px #00000059; pointer-events: none; }
+.pa3d__vimg { position: absolute; top: calc(9vh - 6px); left: 50%; translate: -50%; height: calc(min(78vh, 760px) * var(--s, 1)); width: auto; max-width: none; transform-origin: 50% 0; filter: drop-shadow(0 26px 26px #14161e29); pointer-events: none; }
+.pa3d__nav { position: absolute; left: 0; right: 0; bottom: 26px; display: flex; justify-content: center; align-items: center; gap: 22px; }
+.pa3d__nav button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--pa3d-line); border-radius: 50%; background: #ffffffb3; color: inherit; cursor: pointer; transition: border-color .2s, background .2s; }
+.pa3d__nav button:hover { border-color: var(--pa3d-ink); background: #fff; }
+.pa3d__count { min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
+.pa3d__panel { position: relative; overflow-y: auto; padding: clamp(64px, 9vh, 96px) clamp(24px, 3.4vw, 56px) 40px; background: var(--pa3d-panel); border-left: 1px solid var(--pa3d-line); transform: translateX(100%); transition: transform .55s var(--pa3d-ease); }
+.pa3d__view.is-open .pa3d__panel { transform: none; }
+.pa3d__close { position: absolute; top: 20px; right: 22px; padding: 6px 8px; border: 0; background: none; color: inherit; cursor: pointer; }
+.pa3d__name { margin: 14px 0 12px; color: var(--pa3d-navy); font-size: clamp(32px, 3.4vw, 52px); line-height: 1; }
+.pa3d__price { margin: 0; font-size: 20px; font-variant-numeric: tabular-nums; }
+.pa3d__faces { display: flex; gap: 6px; margin-top: 24px; }
+.pa3d__faces[hidden] { display: none; }
+.pa3d__faces button { height: 34px; padding: 0 14px; border: 1px solid var(--pa3d-line); background: none; color: inherit; cursor: pointer; }
+.pa3d__faces button[aria-pressed="true"] { background: var(--pa3d-navy); border-color: var(--pa3d-navy); color: #fff; }
+.pa3d__sizes-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 30px 0 10px; }
+.pa3d__sizes { display: grid; grid-template-columns: repeat(auto-fit, minmax(56px, 1fr)); gap: 6px; }
+.pa3d__size { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px; height: 56px; border: 1px solid var(--pa3d-line); background: #fff; color: inherit; font: inherit; font-size: 13px; cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
+.pa3d__size small { font-size: 9.5px; color: var(--pa3d-ink-2); }
+.pa3d__size:hover { border-color: var(--pa3d-ink); }
+.pa3d__size[aria-pressed="true"] { background: var(--pa3d-ink); border-color: var(--pa3d-ink); color: #fff; }
+.pa3d__size:disabled { background: none; border-style: dashed; color: #8d9096; cursor: default; }
+.pa3d__size:disabled span { text-decoration: line-through; }
+.pa3d__panel .pa3d__btn { width: 100%; margin-top: 14px; }
+.pa3d__status { margin: 12px 0 0; font-size: 14px; }
+.pa3d__status[hidden] { display: none; }
+.pa3d__status a, .pa3d__link { color: var(--pa3d-accent); }
+.pa3d__link { display: inline-block; margin-top: 18px; font-size: 14px; }
+.pa3d__link[hidden] { display: none; }
+
+/* ---------------- Celular ---------------- */
+@media (max-width: 760px) {
+  .pa3d { --hang: min(42vh, var(--pa3d-h-mob)); --railw: calc(100vw - 48px); }
+  .pa3d__head .pa3d__caps:last-child, .pa3d__hint { display: none; }
+  .pa3d__rack { padding: 40px 0 24px; }
+  .pa3d__rail { --reach: 4px; }
+  .pa3d__mount--l { transform: scale(.75); transform-origin: right center; }
+  .pa3d__mount--r { transform: scale(.75); transform-origin: left center; }
+  .pa3d__readout { position: relative; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 14px; min-height: 64px; margin: 0 16px; padding: 12px 0; border-top: 1px solid var(--pa3d-line); }
+  .pa3d__readout b { display: block; color: var(--pa3d-navy); font-size: 18px; line-height: 1.1; }
+  .pa3d__readout span { font-size: 12px; color: var(--pa3d-ink-2); }
+  .pa3d__readout .pa3d__btn { flex: none; height: 42px; padding: 0 16px; }
+  .pa3d__readout .pa3d__btn[hidden] { display: none; }
+  .pa3d__view { grid-template-columns: 1fr; grid-template-rows: 52svh 1fr; }
+  .pa3d__panel { padding-top: 28px; border-left: 0; transform: translateY(100%); }
+  .pa3d__close { position: fixed; top: 14px; right: 14px; z-index: 2; background: #fff; }
+  .pa3d__vimg { top: calc(4svh - 4px); height: calc(44svh * var(--s, 1)); }
+  .pa3d__stage::before { top: 4svh; left: 6%; right: 6%; }
+  .pa3d__nav { bottom: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pa3d *, .pa3d *::before, .pa3d *::after, .pa3d__view * { transition: none !important; animation: none !important; }
+}

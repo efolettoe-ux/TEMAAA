@@ -1,0 +1,99 @@
+{
+  "sections": {
+    "arara": {
+      "type": "pallacio-arara-3d",
+      "blocks": {
+        "peca-fake": {
+          "type": "piece",
+          "settings": {
+            "product": "fake",
+            "colour": "Azul Marinho",
+            "photo_key": "fake",
+            "rail_face": "back",
+            "scale": 100,
+            "turn": "1"
+          }
+        },
+        "peca-matcha": {
+          "type": "piece",
+          "settings": {
+            "product": "matcha",
+            "colour": "Branca",
+            "photo_key": "matcha",
+            "rail_face": "back",
+            "scale": 100,
+            "turn": "1"
+          }
+        },
+        "peca-maybach": {
+          "type": "piece",
+          "settings": {
+            "product": "maybach-quarter-zip",
+            "colour": "Off White / Logo Azul",
+            "photo_key": "maybach",
+            "rail_face": "back",
+            "scale": 100,
+            "turn": "1"
+          }
+        },
+        "peca-perignon": {
+          "type": "piece",
+          "settings": {
+            "product": "perignon-verde-hoodie",
+            "colour": "Preta",
+            "photo_key": "perignon",
+            "rail_face": "back",
+            "scale": 100,
+            "turn": "1"
+          }
+        },
+        "peca-capri": {
+          "type": "piece",
+          "settings": {
+            "product": "capri-t-shirt",
+            "colour": "Preta",
+            "photo_key": "capri",
+            "rail_face": "back",
+            "scale": 100,
+            "turn": "1"
+          }
+        },
+        "peca-mediterranean": {
+          "type": "piece",
+          "settings": {
+            "product": "mediterranean-swimshorts",
+            "colour": "",
+            "photo_key": "mediterranean",
+            "rail_face": "front",
+            "scale": 68,
+            "turn": "-1"
+          }
+        },
+        "peca-limone": {
+          "type": "piece",
+          "settings": {
+            "product": "limone-swimshorts",
+            "colour": "",
+            "photo_key": "limone",
+            "rail_face": "front",
+            "scale": 68,
+            "turn": "-1"
+          }
+        }
+      },
+      "block_order": [
+        "peca-fake",
+        "peca-matcha",
+        "peca-maybach",
+        "peca-perignon",
+        "peca-capri",
+        "peca-mediterranean",
+        "peca-limone"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "arara"
+  ]
+}

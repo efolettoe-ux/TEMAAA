@@ -1,0 +1,254 @@
+{%- comment -%}
+  PALLACIO: Arara 3D.
+  Peças penduradas de lado num cano cromado. Desktop: passar o mouse vira a peça de frente
+  (giro 3D com torção, pêndulo, vizinhas abrem espaço); arrastar balança; clicar abre.
+  Celular: deslizar o dedo pela arara vira as peças; tocar abre.
+  A peça aberta mostra frente/costas, os tamanhos da cor da foto e adiciona ao carrinho.
+
+  Fotos: PNG/WebP sem fundo, com cabide, todas no mesmo enquadramento (gancho no centro do topo,
+  mesma escala). As fotos de perfil têm o gancho redesenhado de lado. Gere com
+  tools/prepare_photos.py do repositório TEMAAA. As 7 peças atuais já estão no tema
+  (assets/pallacio-arara-3d-<chave>-<front|back|side>.webp): basta preencher "Chave das fotos".
+{%- endcomment -%}
+{%- liquid
+  assign sid = section.id
+-%}
+<style>
+  #pa3d-{{ sid }} {
+    --pa3d-bg: {{ section.settings.background_color }};
+    --pa3d-h-desk: {{ section.settings.height_desktop }}px;
+    --pa3d-h-mob: {{ section.settings.height_mobile }}px;
+    --pa3d-pt: {{ section.settings.padding_top }}px;
+    --pa3d-pb: {{ section.settings.padding_bottom }}px;
+  }
+</style>
+
+<div
+  id="pa3d-{{ sid }}"
+  class="pa3d"
+  data-pa3d
+  data-idle-title="{{ section.settings.mobile_title | escape }}"
+  data-idle-hint="{{ section.settings.mobile_hint | escape }}"
+  data-pick="Escolha um tamanho"
+  data-add="Adicionar"
+  data-unavailable="Esgotado"
+  data-sold-out="Esgotado"
+  data-added="Adicionado à sacola."
+  data-view-cart="Ver sacola"
+  data-error="Não deu para adicionar. Tente de novo."
+>
+  {%- if section.settings.label_left != blank or section.settings.label_right != blank -%}
+    <div class="pa3d__head">
+      <p class="pa3d__caps">{{ section.settings.label_left | escape }}</p>
+      <p class="pa3d__caps">{{ section.settings.label_right | escape }}</p>
+    </div>
+  {%- endif -%}
+
+  <div class="pa3d__rack">
+    <div class="pa3d__rail" data-pa3d-rail role="group" aria-label="{{ section.settings.label_left | default: 'Arara' | escape }}">
+      <span class="pa3d__rod" aria-hidden="true"></span>
+      <span class="pa3d__mount pa3d__mount--l" aria-hidden="true"><i class="pa3d__socket"></i></span>
+      <span class="pa3d__mount pa3d__mount--r" aria-hidden="true"><i class="pa3d__socket"></i></span>
+      {%- comment -%} as peças são criadas pelo pallacio-arara-3d.js a partir do JSON abaixo {%- endcomment -%}
+    </div>
+  </div>
+
+  <div class="pa3d__readout" aria-live="polite">
+    <div><b data-pa3d-readout-name></b><span data-pa3d-readout-sub></span></div>
+    <button class="pa3d__btn" type="button" data-pa3d-readout-btn hidden>Ver</button>
+  </div>
+  {%- if section.settings.hint != blank -%}
+    <div class="pa3d__foot"><p class="pa3d__caps pa3d__hint">{{ section.settings.hint | escape }}</p></div>
+  {%- endif -%}
+  <p class="pa3d__sr" data-pa3d-live aria-live="polite"></p>
+
+  <section class="pa3d__view" data-pa3d-view role="dialog" aria-modal="true" aria-labelledby="pa3d-name-{{ sid }}" hidden>
+    <div class="pa3d__stage" data-pa3d-stage>
+      <img class="pa3d__vimg" data-pa3d-vimg alt="" draggable="false">
+      <div class="pa3d__nav">
+        <button type="button" data-pa3d-prev aria-label="Peça anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+        <span class="pa3d__caps pa3d__count" data-pa3d-count></span>
+        <button type="button" data-pa3d-next aria-label="Próxima peça"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+    <div class="pa3d__panel">
+      <button class="pa3d__caps pa3d__close" type="button" data-pa3d-close>Fechar ✕</button>
+      <p class="pa3d__caps" data-pa3d-kind></p>
+      <h2 class="pa3d__name h2" id="pa3d-name-{{ sid }}" data-pa3d-name></h2>
+      <p class="pa3d__price" data-pa3d-price></p>
+      <div class="pa3d__faces" data-pa3d-faces role="group" aria-label="Vista">
+        <button class="pa3d__caps" type="button" data-face="front" aria-pressed="false">Frente</button>
+        <button class="pa3d__caps" type="button" data-face="back" aria-pressed="false">Costas</button>
+      </div>
+      <div class="pa3d__sizes-head"><span class="pa3d__caps">Tamanho</span></div>
+      <div class="pa3d__sizes" data-pa3d-sizes></div>
+      <button class="pa3d__btn" type="button" data-pa3d-add disabled>Escolha um tamanho</button>
+      <p class="pa3d__status" data-pa3d-status aria-live="polite" hidden></p>
+      <a class="pa3d__link" data-pa3d-link href="#">Ver todos os detalhes →</a>
+    </div>
+  </section>
+
+  <script type="application/json" data-pa3d-data>
+    [
+      {%- assign first_piece = true -%}
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign p = block.settings.product
+          assign key = block.settings.photo_key | strip
+          assign prefix = 'pallacio-arara-3d-' | append: key | append: '-'
+
+          assign img_front = ''
+          assign img_back = ''
+          assign img_side = ''
+          if block.settings.image_front != blank
+            assign img_front = block.settings.image_front | image_url: width: 1200
+          elsif key != blank
+            assign img_front = prefix | append: 'front.webp' | asset_url
+          endif
+          if block.settings.image_back != blank
+            assign img_back = block.settings.image_back | image_url: width: 1200
+          elsif key != blank
+            assign img_back = prefix | append: 'back.webp' | asset_url
+          endif
+          if block.settings.image_side != blank
+            assign img_side = block.settings.image_side | image_url: width: 600
+          elsif key != blank
+            assign img_side = prefix | append: 'side.webp' | asset_url
+          endif
+          assign img_rail = img_back
+          if block.settings.rail_face == 'front' or img_back == blank
+            assign img_rail = img_front
+          endif
+
+          assign name = block.settings.name | default: p.title
+          assign colour = block.settings.colour | strip
+          assign cor = colour | downcase
+
+          assign size_pos = 0
+          if p != blank
+            for opt in p.options_with_values
+              assign on = opt.name | downcase
+              if on == 'tamanho' or on == 'size'
+                assign size_pos = forloop.index0
+              endif
+            endfor
+          endif
+        -%}
+        {%- if img_rail != blank and img_side != blank -%}
+          {%- unless first_piece -%},{%- endunless -%}
+          {%- assign first_piece = false -%}
+          {
+            "id": {{ block.id | json }},
+            "name": {{ name | default: 'Peça' | json }},
+            "kind": {{ block.settings.kind | default: p.type | json }},
+            "colour": {{ colour | json }},
+            "url": {{ p.url | default: '' | json }},
+            "rail": {% if img_rail == img_back %}"back"{% else %}"front"{% endif %},
+            "scale": {{ block.settings.scale | divided_by: 100.0 }},
+            "turn": {{ block.settings.turn | plus: 0 }},
+            "img": {
+              "rail": {{ img_rail | json }},
+              "side": {{ img_side | json }},
+              "front": {% if img_front != blank %}{{ img_front | json }}{% else %}null{% endif %},
+              "back": {% if img_back != blank %}{{ img_back | json }}{% else %}null{% endif %}
+            },
+            {%- assign price_variant = nil -%}
+            "sizes": [
+              {%- assign first_size = true -%}
+              {%- for v in p.variants -%}
+                {%- liquid
+                  assign match = true
+                  if cor != blank and p.options.size > 1
+                    assign match = false
+                    for val in v.options
+                      assign d = val | downcase
+                      if d == cor
+                        assign match = true
+                      endif
+                    endfor
+                  endif
+                -%}
+                {%- if match -%}
+                  {%- if price_variant == nil -%}{%- assign price_variant = v -%}{%- endif -%}
+                  {%- unless first_size -%},{%- endunless -%}
+                  {%- assign first_size = false -%}
+                  { "id": {{ v.id | json }}, "label": {{ v.options[size_pos] | json }}, "available": {{ v.available | json }} }
+                {%- endif -%}
+              {%- endfor -%}
+            ],
+            {%- if price_variant != nil -%}
+              "priceLabel": {{ price_variant.price | money | strip_html | json }}
+            {%- elsif p != blank -%}
+              "priceLabel": {{ p.price | money | strip_html | json }}
+            {%- else -%}
+              "priceLabel": ""
+            {%- endif -%}
+          }
+        {%- endif -%}
+      {%- endfor -%}
+    ]
+  </script>
+</div>
+
+{{ 'pallacio-arara-3d.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'pallacio-arara-3d-gl.js' | asset_url }}" defer></script>
+<script src="{{ 'pallacio-arara-3d.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Arara 3D",
+  "tag": "section",
+  "class": "section-pallacio-arara-3d",
+  "settings": [
+    { "type": "text", "id": "label_left", "label": "Texto à esquerda, em cima", "default": "Pallacio Club — a arara" },
+    { "type": "text", "id": "label_right", "label": "Texto à direita, em cima", "default": "" },
+    { "type": "text", "id": "hint", "label": "Dica embaixo (desktop)", "default": "Passe o mouse para virar · arraste para balançar · clique para ver de perto" },
+    { "type": "text", "id": "mobile_title", "label": "Título embaixo (celular)", "default": "A arara" },
+    { "type": "text", "id": "mobile_hint", "label": "Dica embaixo (celular)", "default": "Deslize o dedo pela arara para virar as peças" },
+    { "type": "header", "content": "Tamanho" },
+    { "type": "range", "id": "height_desktop", "label": "Altura das peças (desktop)", "min": 300, "max": 600, "step": 10, "unit": "px", "default": 440 },
+    { "type": "range", "id": "height_mobile", "label": "Altura das peças (celular)", "min": 220, "max": 420, "step": 10, "unit": "px", "default": 320 },
+    { "type": "header", "content": "Cores" },
+    { "type": "color", "id": "background_color", "label": "Fundo", "default": "#ffffff" },
+    { "type": "header", "content": "Espaçamento" },
+    { "type": "range", "id": "padding_top", "label": "Espaço em cima", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "label": "Espaço embaixo", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 }
+  ],
+  "blocks": [
+    {
+      "type": "piece",
+      "name": "Peça",
+      "settings": [
+        { "type": "product", "id": "product", "label": "Produto" },
+        { "type": "text", "id": "colour", "label": "Cor da foto", "info": "Igual à opção de cor do produto (ex.: Azul Marinho). Só os tamanhos dessa cor aparecem." },
+        { "type": "text", "id": "name", "label": "Nome (opcional, usa o do produto)" },
+        { "type": "text", "id": "kind", "label": "Tipo (opcional, usa o do produto)" },
+        { "type": "header", "content": "Fotos" },
+        { "type": "text", "id": "photo_key", "label": "Chave das fotos do tema", "info": "fake, matcha, maybach, perignon, capri, mediterranean ou limone. As fotos abaixo, se preenchidas, substituem estas." },
+        { "type": "image_picker", "id": "image_side", "label": "De lado (perfil)" },
+        { "type": "image_picker", "id": "image_front", "label": "Frente" },
+        { "type": "image_picker", "id": "image_back", "label": "Costas" },
+        { "type": "select", "id": "rail_face", "label": "Vista ao girar na arara", "options": [ { "value": "back", "label": "Costas (estampa)" }, { "value": "front", "label": "Frente" } ], "default": "back" },
+        { "type": "header", "content": "Ajustes" },
+        { "type": "range", "id": "scale", "label": "Escala da peça", "info": "Para fotos tiradas mais de perto (os shorts usam 68%).", "min": 50, "max": 100, "step": 1, "unit": "%", "default": 100 },
+        { "type": "select", "id": "turn", "label": "Sentido do giro", "options": [ { "value": "1", "label": "Normal" }, { "value": "-1", "label": "Invertido" } ], "default": "1" }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Arara 3D",
+      "blocks": [
+        { "type": "piece", "settings": { "photo_key": "fake", "colour": "Azul Marinho" } },
+        { "type": "piece", "settings": { "photo_key": "matcha", "colour": "Branca" } },
+        { "type": "piece", "settings": { "photo_key": "maybach", "colour": "Off White / Logo Azul" } },
+        { "type": "piece", "settings": { "photo_key": "perignon", "colour": "Preta" } },
+        { "type": "piece", "settings": { "photo_key": "capri", "colour": "Preta" } },
+        { "type": "piece", "settings": { "photo_key": "mediterranean", "rail_face": "front", "scale": 68, "turn": "-1" } },
+        { "type": "piece", "settings": { "photo_key": "limone", "rail_face": "front", "scale": 68, "turn": "-1" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
