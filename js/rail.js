@@ -234,7 +234,7 @@
       g.side.style.opacity = g.face ? 0 : 1;
       var dir = g.p.turn || 1;
       g.front.style.transform = "translateX(-50%) rotateY(" + (dir * (1 - f) * 86 + g.yaw).toFixed(2) + "deg)";
-      g.side.style.transform = "translateX(-50%) rotateY(" + (-dir * f * 70).toFixed(2) + "deg)";
+      g.side.style.transform = "translateX(-50%) rotateY(" + (-dir * f * 70).toFixed(2) + "deg)" + (g.p.mirrorSide ? " scaleX(-1)" : "");
     });
   }
 
