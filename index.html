@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PALLACIO — The Right Clothes. The Right Places.</title>
+<meta name="description" content="A arara da Pallacio®: passe o mouse para virar cada peça, arraste para balançar, clique para ver de perto.">
+<meta name="theme-color" content="#f4f1ea">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Pinyon+Script&family=Inter+Tight:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/rail.css">
+</head>
+<body>
+
+<div class="announce" role="note">
+  <span>The right clothes. The right places.</span><i></i><span>Made for every plan, day to night</span>
+</div>
+
+<header class="top">
+  <div class="wrap top-in">
+    <!-- trocar pelo SVG do logo oficial -->
+    <a class="logo" href="#top" aria-label="Pallacio, voltar ao início">Pallacio</a>
+    <button class="bag-btn caps" type="button" id="bag-btn" aria-label="Sacola, 0 itens">Sacola <span class="bag-count" id="bag-count">0</span></button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-labelledby="hero-title">
+    <h1 class="sr" id="hero-title">Pallacio: as peças da temporada numa arara só.</h1>
+    <div class="wrap hero-head">
+      <p class="caps">Pallacio Club — a arara</p>
+      <p class="caps">7 peças</p>
+    </div>
+
+    <div class="rack">
+      <div class="wall-type" aria-hidden="true">Pallacio</div>
+      <div class="rail" id="rail" role="group" aria-label="A arara: sete peças">
+        <span class="bracket bracket--l" aria-hidden="true"></span><span class="bracket bracket--r" aria-hidden="true"></span>
+        <!-- as peças são criadas por js/rail.js a partir de js/products.js -->
+        <div class="tag" id="tag" aria-hidden="true">
+          <div class="tag-card">
+            <p class="tag-brand">Pallacio Club</p>
+            <p class="tag-name" id="tag-name"></p>
+            <p class="tag-price" id="tag-price"></p>
+            <p class="tag-sizes" id="tag-sizes"></p>
+            <p class="tag-cta">Ver de perto →</p>
+          </div>
+        </div>
+        <span class="tag-string" id="tag-string" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <div class="readout" id="readout" aria-live="polite">
+        <div><b id="readout-name">A arara</b><span id="readout-sub"></span></div>
+        <button class="btn" type="button" id="readout-btn" hidden>Ver</button>
+      </div>
+    </div>
+    <div class="wrap hero-foot">
+      <p class="caps hint">Passe o mouse para virar · arraste para balançar · clique para ver de perto</p>
+    </div>
+    <p class="sr" id="rail-live" aria-live="polite"></p>
+  </section>
+</main>
+
+<section class="view" id="view" role="dialog" aria-modal="true" aria-labelledby="view-name" aria-hidden="true">
+  <div class="view-stage" id="view-stage">
+    <img class="view-img" id="view-img" alt="" draggable="false">
+    <div class="view-nav">
+      <button type="button" id="view-prev" aria-label="Peça anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+      <span class="view-count caps" id="view-count">01 / 07</span>
+      <button type="button" id="view-next" aria-label="Próxima peça"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </div>
+  </div>
+  <div class="view-panel">
+    <button class="view-close caps" type="button" id="view-close">Fechar ✕</button>
+    <p class="caps view-kind" id="view-kind"></p>
+    <h2 class="view-name" id="view-name"></h2>
+    <p class="view-price" id="view-price"></p>
+    <div class="faces" role="group" aria-label="Vista">
+      <button class="caps" type="button" data-face="front" aria-pressed="false">Frente</button>
+      <button class="caps" type="button" data-face="back" aria-pressed="false">Costas</button>
+    </div>
+    <div class="sizes">
+      <div class="sizes-head"><span class="caps">Tamanho</span><span id="view-fit"></span></div>
+      <div class="size-grid" id="size-grid"></div>
+    </div>
+    <button class="btn" type="button" id="add-btn" disabled>Escolha um tamanho</button>
+  </div>
+</section>
+
+<script src="js/products.js"></script>
+<script src="js/rail.js"></script>
+</body>
+</html>
