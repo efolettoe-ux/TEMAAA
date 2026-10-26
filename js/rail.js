@@ -13,9 +13,7 @@
 
   var PRODUCTS = window.PRODUCTS;
   var N = PRODUCTS.length, SUB = 1 / 120, LOW_STOCK = 3;
-  /* de onde pende a etiqueta, em (u, v) da foto: ponta da manga, cós do shorts */
   var FABRIC = { "Camiseta": "Algodão penteado premium, 180 g/m²", "Moletom": "Moletom 3 cabos, 310 g/m²" };
-  var ANCHOR = { tee: [0.95, 0.5], sweat: [0.88, 0.52], shorts: [0.92, 0.32] };
 
   function $(id) { return document.getElementById(id); }
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
@@ -38,13 +36,12 @@
     var front = el.querySelector(".v-front"), side = el.querySelector(".v-side");
     front.src = p.img.rail;
     side.src = p.img.side;
-    rail.insertBefore(el, $("tag"));
+    rail.appendChild(el);
     return {
       i: i, p: p, el: el, sw: el.querySelector(".swing"), front: front, side: side,
       x: 0, vx: 0, tx: 0, w: 0, py: 0, vy: 0, delay: 0,
       t: 0, vt: 0, a: 0, va: 0, b: 0, vb: 0, lift: 0, vl: 0, yaw: 0,
-      face: false, hidden: false, Wf: 0, Ws: 0,
-      anchor: ANCHOR[p.cut] || ANCHOR.tee
+      face: false, hidden: false, Wf: 0, Ws: 0
     };
   });
 
@@ -196,17 +193,17 @@
     var n = 0;
     while (accum >= SUB && n < 8) { step(SUB); accum -= SUB; n++; }
     if (n === 8) accum = 0;
-    draw(dt);
+    draw();
     if ((grab || moving() || (!reduced && heroVisible)) && !document.hidden) requestAnimationFrame(frame);
     else running = false;
   }
   function kick() {
-    if (reduced) { settleAll(); draw(0); return; }
+    if (reduced) { settleAll(); draw(); return; }
     if (!running) { running = true; lastT = performance.now(); requestAnimationFrame(frame); }
   }
 
   /* ---------------- Desenho ---------------- */
-  function draw(dt) {
+  function draw() {
     G.forEach(function (g) {
       var f = clamp(g.t, -0.1, 1.1);
       g.el.style.transform = "translate3d(" + (g.x - g.Wf / 2).toFixed(2) + "px," + g.py.toFixed(2) + "px,0)";
@@ -219,60 +216,9 @@
       g.front.style.transform = "translateX(-50%) rotateY(" + ((1 - f) * 86 + g.yaw).toFixed(2) + "deg)";
       g.side.style.transform = "translateX(-50%) rotateY(" + (-f * 70).toFixed(2) + "deg)";
     });
-    drawTag(dt);
   }
-
-  /* ---------------- A etiqueta ---------------- */
-  var tagEl = $("tag"), stringEl = $("tag-string");
-  var tag = { on: false, owner: -1, phi: 0, w: 0, px: 0, ppx: 0, L: 34 };
 
   function left(p, k) { return (p.stock ? p.stock[k] : Infinity) - Bag.count(p.id, p.sizes[k]); }
-  function fillTag(i) {
-    var p = PRODUCTS[i];
-    $("tag-name").textContent = p.name.replace(/-/g, "\u2011"); /* não quebra em T-SHIRT */
-    $("tag-price").textContent = brl(p.price);
-    $("tag-sizes").innerHTML = p.sizes.map(function (s, k) {
-      var n = left(p, k);
-      return n <= 0 ? "<s>" + s + "</s>" : n <= LOW_STOCK ? "<b>" + s + "</b>" : "<span>" + s + "</span>";
-    }).join("");
-  }
-
-  /* Onde fica, no rail, um ponto (u, v) da foto de frente da peça. */
-  function frontPoint(g, u, v) {
-    var f = clamp(g.t, 0, 1), proj = Math.cos(((1 - f) * 86 + g.yaw) * Math.PI / 180);
-    var s = 1 + 0.045 * g.lift, lag = clamp(g.b - g.a, -0.3, 0.3);
-    var lx = (u - 0.5) * g.Wf * proj * s, ly = v * geo.h * s;
-    lx -= ly * Math.tan(lag);
-    var c = Math.cos(g.a), sn = Math.sin(g.a);
-    return [g.x + lx * c - ly * sn, 6 + g.py + lx * sn + ly * c];
-  }
-
-  function drawTag(dt) {
-    var g = active >= 0 ? G[active] : null;
-    var show = g && !small.matches && !g.hidden && g.t > 0.6 && !body.classList.contains("view-open");
-    if (!show) {
-      if (tag.on) { tag.on = false; tagEl.classList.remove("on"); stringEl.classList.remove("on"); }
-      return;
-    }
-    var a = frontPoint(g, g.anchor[0], g.anchor[1]);
-    if (!tag.on || tag.owner !== active) {
-      if (tag.owner !== active) fillTag(active);
-      tag.on = true; tag.owner = active;
-      tag.px = tag.ppx = a[0]; tag.phi = reduced ? 0 : 0.3; tag.w = 0;
-      tagEl.classList.add("on"); stringEl.classList.add("on");
-    }
-    /* um pêndulo pendurado na manga: balança quando a manga se mexe */
-    if (dt > 0 && !reduced) {
-      var accX = clamp(((a[0] - tag.px) - (tag.px - tag.ppx)) / (dt * dt), -9000, 9000);
-      tag.ppx = tag.px; tag.px = a[0];
-      var al = -(2200 / tag.L) * Math.sin(tag.phi) - 6 * tag.w - (accX / tag.L) * Math.cos(tag.phi);
-      tag.w += al * dt; tag.phi = clamp(tag.phi + tag.w * dt, -1.2, 1.2);
-    }
-    var hx = a[0] + tag.L * Math.sin(tag.phi), hy = a[1] + tag.L * Math.cos(tag.phi);
-    stringEl.style.transform = "translate(" + a[0].toFixed(1) + "px," + a[1].toFixed(1) + "px) rotate(" + (-tag.phi).toFixed(3) + "rad)";
-    var sc = clamp(geo.h / 440, 0.72, 1);
-    tagEl.style.transform = "translate(" + (hx - 76).toFixed(1) + "px," + (hy - 14).toFixed(1) + "px) rotate(" + (-tag.phi * 0.9).toFixed(3) + "rad) scale(" + sc.toFixed(3) + ")";
-  }
 
   /* ---------------- Escolher uma peça ---------------- */
   var live = $("rail-live");
@@ -315,7 +261,6 @@
       try { rail.setPointerCapture(e.pointerId); } catch (err) {}
     }
     if (grab) { grab.x = p[0]; grab.y = p[1]; kick(); return; }
-    if (e.target.closest && e.target.closest(".tag")) return;
     if (e.pointerType === "mouse" && finePointer.matches && !small.matches) {
       setActive(hitTest(p[0]));
       if (active >= 0) yawAim = clamp((p[0] - G[active].x) / (G[active].w / 2), -1, 1) * 14;
@@ -323,7 +268,7 @@
     kick();
   });
   rail.addEventListener("pointerdown", function (e) {
-    if (e.button !== 0 || e.target.closest(".tag")) return;
+    if (e.button !== 0) return;
     down = { cx: e.clientX, cy: e.clientY, i: hitTest(railXY(e)[0]) };
   });
   function release() {
@@ -341,7 +286,6 @@
   });
   rail.addEventListener("click", function (e) {
     if (suppressClick) return;
-    if (e.target.closest(".tag")) { if (active >= 0) View.open(active); return; }
     var h = e.target.closest(".hang");
     var i = e.detail === 0 && h ? G.map(function (g) { return g.el; }).indexOf(h) : hitTest(railXY(e)[0]);
     if (i < 0) return;
@@ -390,7 +334,7 @@
   var resizeT = null;
   addEventListener("resize", function () {
     clearTimeout(resizeT);
-    resizeT = setTimeout(function () { measure(); settleAll(); draw(0); kick(); }, 120);
+    resizeT = setTimeout(function () { measure(); settleAll(); draw(); kick(); }, 120);
   });
   small.addEventListener("change", function () { setActive(-1); });
 
@@ -409,7 +353,6 @@
       c.textContent = n; c.classList.add("on");
       c.classList.remove("pop"); void c.offsetWidth; c.classList.add("pop");
       $("bag-btn").setAttribute("aria-label", "Sacola, " + n + (n === 1 ? " item" : " itens"));
-      if (active >= 0) fillTag(active);
     }
     return { count: count, add: add };
   })();
@@ -448,7 +391,7 @@
       addBtn.disabled = picked === null || p.price == null;
       addBtn.textContent = p.price == null ? "Em breve" : picked === null ? "Escolha um tamanho" : "Adicionar " + p.sizes[picked] + " — " + brl(p.price);
     }
-    function markAway(i) { G.forEach(function (g, k) { g.hidden = k === i; }); draw(0); }
+    function markAway(i) { G.forEach(function (g, k) { g.hidden = k === i; }); draw(); }
 
     function open(i) {
       if (body.classList.contains("view-open")) return;
@@ -510,6 +453,6 @@
     G.forEach(function (g, i) { g.py = -geo.h * 0.22; g.delay = 0.12 + i * 0.07; g.va = (i % 2 ? 1 : -1) * 0.25; });
   }
   updateReadout();
-  draw(0);
+  draw();
   kick();
 })();
