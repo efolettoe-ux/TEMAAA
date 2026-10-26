@@ -54,11 +54,32 @@ a { color: inherit; }
 /* ---------------- O cano ---------------- */
 .rail { position: relative; z-index: 1; width: var(--railw); height: calc(var(--hang) + 6px); touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: pointer; }
 .rail.grabbing { cursor: grabbing; }
-/* o topo do cano encosta na curva de dentro dos ganchos (0,9% da altura da foto); os ganchos ficam na frente */
-.rail::before { content: ""; position: absolute; z-index: 5; top: calc(6px + var(--hang) * .009); left: -56px; right: -56px; height: 8px; border-radius: 4px; background: linear-gradient(#fbfbfc 0%, #d6d8dc 22%, #a3a6ac 48%, #7d8087 62%, #c9cbcf 84%, #eceef0 100%); box-shadow: 0 8px 14px -8px #14161e73; }
-.bracket { position: absolute; z-index: 41; top: calc(var(--hang) * .009 - 7px); width: 12px; height: 34px; border-radius: 3px; background: linear-gradient(90deg, #8b8e95, #f2f3f5 38%, #c2c5ca 64%, #83868d); box-shadow: 0 4px 8px -2px #14161e40; }
-.bracket--l { left: -64px; }
-.bracket--r { right: -64px; }
+/* ---- O cano cromado e os suportes de parede ----
+   O topo do cano encosta na curva de dentro dos ganchos (0,9% da altura da
+   foto, ver APEX em js/rail-gl.js); os ganchos ficam na frente dele. */
+.rail { --rod: 11px; --rod-top: calc(6px + var(--hang) * .009); --reach: 64px; }
+.rod { position: absolute; z-index: 5; top: var(--rod-top); left: calc(-1 * var(--reach)); right: calc(-1 * var(--reach)); height: var(--rod); border-radius: calc(var(--rod) / 2);
+  background:
+    linear-gradient(90deg, #ffffff00 0%, #ffffff59 9%, #ffffff00 18%, #0000 30%, #00000038 44%, #0000004d 52%, #00000026 60%, #0000 72%, #ffffff4d 86%, #ffffff00 94%),
+    linear-gradient(#e9ebee 0%, #ffffff 12%, #b9bdc3 26%, #4a4e55 46%, #2b2e33 54%, #6d7178 66%, #d7dade 82%, #f3f4f6 90%, #9a9ea5 100%);
+  box-shadow: 0 7px 9px -5px #14161e47, 0 16px 22px -12px #14161e2e; }
+.rod::after { content: ""; position: absolute; left: 1.5%; right: 1.5%; top: 18%; height: 1.5px; border-radius: 1px; background: linear-gradient(90deg, #fff0, #fffc 20%, #fff 50%, #fffc 80%, #fff0); }
+.mount { position: absolute; z-index: 41; top: calc(var(--rod-top) + var(--rod) / 2 - 26px); width: 24px; height: 52px; border-radius: 5px;
+  background: linear-gradient(90deg, #c9ccd1, #f4f5f7 30%, #e2e4e8 60%, #b6b9bf);
+  box-shadow: inset 0 0 0 1px #ffffff80, inset 0 -1px 0 1px #00000014, 0 3px 6px -1px #14161e40, 0 10px 18px -8px #14161e33; }
+.mount::before, .mount::after { content: ""; position: absolute; left: 50%; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fdfdfe, #a9adb3 55%, #6c7077); box-shadow: 0 1px 1px #0000002e, inset 0 0 0 .5px #0000004d; }
+.mount::before { top: 6px; }
+.mount::after { bottom: 6px; }
+.socket { position: absolute; top: 50%; width: 20px; height: 22px; margin-top: -11px; border-radius: 3px;
+  background:
+    linear-gradient(90deg, #0000 0 18%, #0000002e 19% 22%, #0000 23% 77%, #0000002e 78% 81%, #0000 82%),
+    linear-gradient(#f4f5f7 0%, #ffffff 14%, #c3c6cc 32%, #63676e 50%, #8b8f96 64%, #e3e5e8 84%, #a4a8ae 100%);
+  box-shadow: 0 3px 5px -2px #14161e4d; }
+.mount--l { left: calc(-1 * var(--reach) - 22px); }
+.mount--l .socket { left: 18px; }
+.mount--r { right: calc(-1 * var(--reach) - 22px); }
+.mount--r .socket { right: 18px; }
 
 .hang { position: absolute; top: 6px; left: 0; pointer-events: none; will-change: transform; }
 .hang:focus-visible { outline: none; }
@@ -117,9 +138,9 @@ body.view-open .view-panel { transform: none; }
   .announce span:nth-of-type(n+2), .announce i, .hero-head p:last-child, .hint { display: none; }
   .hero { min-height: calc(100svh - 92px); padding-top: 16px; }
   .rack { padding: 40px 0 24px; }
-  .rail::before { left: -14px; right: -14px; }
-  .bracket--l { left: -20px; }
-  .bracket--r { right: -20px; }
+  .rail { --reach: 4px; }
+  .mount--l { transform: scale(.75); transform-origin: right center; }
+  .mount--r { transform: scale(.75); transform-origin: left center; }
   .readout { position: relative; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 14px; min-height: 64px; padding: 12px 0; border-top: 1px solid var(--line); }
   .readout b { display: block; font: 600 20px/1.1 var(--display); color: var(--navy); }
   .readout span { font: 500 12px/1.4 var(--sans); color: var(--ink-2); }
