@@ -58,12 +58,15 @@
     geo.h = rail.clientHeight - 6;
     geo.slot = geo.w / N;
     G.forEach(function (g) {
-      g.Wf = g.p.aspect.rail * geo.h;
-      g.Ws = g.p.aspect.side * geo.h;
+      var sc = g.p.scale || 1;
+      g.Hs = geo.h * sc;
+      g.Wf = g.p.aspect.rail * g.Hs;
+      g.Ws = g.p.aspect.side * g.Hs;
       g.el.style.width = g.Wf + "px";
       g.el.style.height = geo.h + "px";
       g.front.style.width = g.Wf + "px";
       g.side.style.width = g.Ws + "px";
+      g.front.style.height = g.side.style.height = g.Hs + "px";
     });
     if (gl) gl.resize(geo);
   }
@@ -381,6 +384,7 @@
     function fill(i) {
       var p = PRODUCTS[i];
       img.alt = p.name;
+      img.style.setProperty("--s", p.scale || 1);
       show(p.rail);
       $("view-count").textContent = pad(i + 1) + " / " + pad(N);
       $("view-kind").textContent = p.kind + " · " + p.colour;

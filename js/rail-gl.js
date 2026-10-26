@@ -194,8 +194,8 @@
       gl.uniform1f(U.uFlutter, reduced ? 0 : Math.min(1, motion * 0.15) * h * 0.012);
       gl.uniform1f(U.uTime, clock);
       gl.uniform1f(U.uPlane, face ? 0 : 1);
-      gl.uniform1f(U.uBulge, h * 0.05);
-      gl.uniform2f(U.uSize, face ? g.Wf : g.Ws, h);
+      gl.uniform1f(U.uBulge, g.Hs * 0.05);
+      gl.uniform2f(U.uSize, face ? g.Wf : g.Ws, g.Hs);
       gl.bindTexture(gl.TEXTURE_2D, face ? (shadow ? g.tex.frontSoft : g.tex.front) : (shadow ? g.tex.sideSoft : g.tex.side));
       var m = face ? meshes.front : meshes.side;
       gl.bindVertexArray(m.vao);

@@ -6,6 +6,7 @@
      front / back — as duas vistas da página da peça
      side  — o perfil, como a peça fica pendurada de lado
    `aspect` é largura / altura de cada foto (o script imprime os valores).
+   `scale` corrige peças fotografadas mais de perto (os shorts): 1 = escala das camisetas.
    `price: null` mostra "Em breve" e não deixa adicionar à sacola.
    `stock` é opcional, por tamanho (0 = esgotado). */
 window.PRODUCTS = [
@@ -25,10 +26,10 @@ window.PRODUCTS = [
     sizes: ["PP", "P", "M", "G", "GG", "XG"], rail: "back",
     aspect: { front: 0.763, back: 0.766, side: 0.201 } },
   { id: "mediterranean", name: "MEDITERRANEAN SHORTS",   kind: "Shorts",   colour: "Azul Marinho", price: null,   cut: "shorts",
-    sizes: ["P", "M", "G", "GG"], rail: "front",
+    sizes: ["P", "M", "G", "GG"], rail: "front", scale: 0.68,
     aspect: { front: 0.759, back: 0.775, side: 0.319 } },
   { id: "limone",        name: "LIMONE SHORTS",          kind: "Shorts",   colour: "Listrado Branco e Azul Claro", price: null, cut: "shorts",
-    sizes: ["P", "M", "G", "GG"], rail: "front",
+    sizes: ["P", "M", "G", "GG"], rail: "front", scale: 0.68,
     aspect: { front: 0.732, back: 0.762, side: 0.313 } }
 ];
 
