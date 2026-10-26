@@ -5,7 +5,7 @@
        quando uma peça vira de frente);
      - o cabide gira de lado (perfil) para de frente;
      - a peça balança como um pêndulo, empurrada pelo deslizar do gancho,
-       pelo cursor que passa, por uma brisa leve e quando você a arrasta;
+       pelo cursor que passa e quando você a arrasta;
      - a barra atrasa em relação aos ombros, o que dá o ar de tecido.
    O giro também torce: os ombros viram primeiro e a barra vem depois, passa
    do ponto e volta. Barras vizinhas não se atravessam: uma peça arremessada
@@ -49,7 +49,7 @@
   });
 
   var geo = { w: 0, h: 0, slot: 0 };
-  var active = -1, yawAim = 0, clock = 0, heroVisible = true;
+  var active = -1, yawAim = 0, clock = 0;
   var hand = { on: false, x: 0, y: 0, vx: 0, t: 0 };
   var grab = null, down = null, suppressClick = false;
 
@@ -140,10 +140,7 @@
       g.yaw += ((on ? yawAim : 0) - g.yaw) * Math.min(1, 10 * dt);
 
       /* o pêndulo */
-      var wind = !reduced && heroVisible
-        ? 0.5 * (on ? 0.3 : 1) * (Math.sin(clock * 0.83 + i * 1.7) * 0.6 + Math.sin(clock * 1.9 + i * 0.6) * 0.4)
-        : 0;
-      var aa = -22 * Math.sin(g.a) - (on ? 6 : 1.4) * g.va + (ax / L) * Math.cos(g.a) * 0.6 + wind;
+      var aa = -22 * Math.sin(g.a) - (on ? 6 : 3.2) * g.va + (ax / L) * Math.cos(g.a) * 0.6;
       if (grab && grab.g === g) {
         var dx = grab.x - g.x, dy = Math.max(20, grab.y - g.py);
         var want = clamp(Math.atan2(-dx, dy), -1.1, 1.1);
@@ -207,7 +204,7 @@
     while (accum >= SUB && n < 8) { step(SUB); accum -= SUB; n++; }
     if (n === 8) accum = 0;
     draw();
-    if ((grab || moving() || (!reduced && heroVisible)) && !document.hidden) requestAnimationFrame(frame);
+    if ((grab || moving()) && !document.hidden) requestAnimationFrame(frame);
     else running = false;
   }
   function kick() {
@@ -347,9 +344,6 @@
   }
   readoutBtn.addEventListener("click", function () { if (active >= 0) View.open(active); });
 
-  if ("IntersectionObserver" in window) {
-    new IntersectionObserver(function (es) { heroVisible = es[0].isIntersecting; if (heroVisible) kick(); }).observe(rail);
-  }
   document.addEventListener("visibilitychange", function () { if (!document.hidden) kick(); });
   var resizeT = null;
   addEventListener("resize", function () {
@@ -471,7 +465,7 @@
   settleAll();
   if (!reduced) {
     /* as peças caem no cano uma depois da outra */
-    G.forEach(function (g, i) { g.py = -geo.h * 0.22; g.delay = 0.12 + i * 0.07; g.va = (i % 2 ? 1 : -1) * 0.25; });
+    G.forEach(function (g, i) { g.py = -geo.h * 0.22; g.delay = 0.12 + i * 0.07; });
   }
   updateReadout();
   draw();

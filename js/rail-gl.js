@@ -168,6 +168,19 @@
       var luma = n ? sum / n : 0.5, t = Math.min(1, Math.max(0, (luma - 0.35) / 0.5));
       return 0.6 - 0.42 * t * t * (3 - 2 * t);
     }
+    /* Pendurada, a peça gira até o peso ficar embaixo do gancho. Nas fotos de
+       perfil o corpo às vezes sai um pouco para o lado; este é o ângulo que
+       o recoloca embaixo do gancho, para todas ficarem na mesma posição. */
+    function restTilt(im) {
+      var w = 64, h = Math.round(64 * im.naturalHeight / im.naturalWidth), c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      var x = c.getContext("2d"); x.drawImage(im, 0, 0, w, h);
+      var d = x.getImageData(0, 0, w, h).data, sx = 0, sy = 0, n = 0;
+      for (var j = Math.round(h * 0.15); j < h; j++) for (var i = 0; i < w; i++) {
+        if (d[(j * w + i) * 4 + 3] > 128) { sx += i + 0.5 - w / 2; sy += j - APEX * h; n++; }
+      }
+      return n ? Math.atan2(sx / n, sy / n) : 0;
+    }
     function decoded(im) {
       if (im.complete && im.naturalWidth) return Promise.resolve();
       return im.decode ? im.decode().catch(function () {}) : new Promise(function (r) { im.onload = im.onerror = r; });
@@ -182,6 +195,7 @@
         if (ims.some(function (im) { return !im.naturalWidth; })) throw new Error("foto não carregou");
         G.forEach(function (g) {
           g.shadeK = shadeStrength(g.front);
+          g.sideTilt = restTilt(g.side);
           g.tex = { front: texture(g.front), side: texture(g.side), frontSoft: texture(soft(g.front)), sideSoft: texture(soft(g.side)) };
         });
         rail.appendChild(canvas);
@@ -209,7 +223,9 @@
       gl.uniform3f(U.uHook, g.x, 6 + APEX * h + g.py, g.lift * h * 0.09);
       gl.uniform1f(U.uApex, APEX);
       gl.uniform2f(U.uTurn, top, hem);
-      gl.uniform2f(U.uSwing, g.a, g.b);
+      /* de lado, o corpo fica bem embaixo do gancho; some conforme vira */
+      var rest = g.sideTilt * (1 - Math.min(1, Math.max(0, g.t)));
+      gl.uniform2f(U.uSwing, g.a + rest, g.b + rest);
       gl.uniform1f(U.uFlutter, reduced ? 0 : Math.min(1, motion * 0.15) * h * 0.012);
       gl.uniform1f(U.uTime, clock);
       gl.uniform1f(U.uPlane, face ? 0 : dir);
