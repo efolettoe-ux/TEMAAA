@@ -22,7 +22,7 @@
     "uniform vec2 uSize;",          // largura e altura da foto, em px
     "uniform vec2 uTurn;",          // ângulo nos ombros e na barra (rad, 0 = de frente)
     "uniform vec2 uSwing;",         // balanço nos ombros e na barra (rad)
-    "uniform float uPlane;",        // 0 = frente, 1 = perfil
+    "uniform float uPlane;",        // 0 = frente; ±1 = perfil, com o sinal do sentido do giro
     "uniform float uBulge, uFlutter, uTime, uShadow, uWallZ, uShadeK;",
     "uniform vec3 uCam;",           // centro da perspectiva (x, y) e distância
     "uniform vec4 uView;",          // origem do canvas no rail (x, y) e tamanho (w, h)",
@@ -33,7 +33,7 @@
     "  float phi = mix(uTurn.x, uTurn.y, k) - uPlane * 1.5707963;",
     "  float body = smoothstep(0.08, 0.22, uv.y) * (1.0 - 0.35 * uv.y);",
     "  float q = clamp((uv.x - 0.5) / 0.34, -1.0, 1.0);",
-    "  float z = (1.0 - uPlane) * uBulge * (1.0 - q * q) * body;",
+    "  float z = (1.0 - abs(uPlane)) * uBulge * (1.0 - q * q) * body;",
     "  z += uFlutter * sin(uv.x * 17.0 + uv.y * 8.0 - uTime * 7.0) * sin(uv.y * 3.14159);",
     "  float X = x * cos(phi) + z * sin(phi), Z = -x * sin(phi) + z * cos(phi);",
     "  float s = mix(uSwing.x, uSwing.y, uv.y);",
@@ -197,14 +197,15 @@
 
     function garment(g, shadow, clock) {
       var face = g.face, h = geo.h;
-      var top = (1 - g.t) * Math.PI / 2 + g.yaw * Math.PI / 180, hem = (1 - g.th) * Math.PI / 2 + g.yaw * 0.6 * Math.PI / 180;
+      var dir = g.p.turn || 1;
+      var top = dir * (1 - g.t) * Math.PI / 2 + g.yaw * Math.PI / 180, hem = dir * (1 - g.th) * Math.PI / 2 + g.yaw * 0.6 * Math.PI / 180;
       var motion = Math.abs(g.vt) + Math.abs(g.vth) + Math.abs(g.va) * 2;
       gl.uniform3f(U.uHook, g.x, 6 + g.py, g.lift * h * 0.09);
       gl.uniform2f(U.uTurn, top, hem);
       gl.uniform2f(U.uSwing, g.a, g.b);
       gl.uniform1f(U.uFlutter, reduced ? 0 : Math.min(1, motion * 0.15) * h * 0.012);
       gl.uniform1f(U.uTime, clock);
-      gl.uniform1f(U.uPlane, face ? 0 : 1);
+      gl.uniform1f(U.uPlane, face ? 0 : dir);
       gl.uniform1f(U.uBulge, g.Hs * 0.05);
       gl.uniform1f(U.uShadeK, shadow ? 0 : g.shadeK);
       gl.uniform2f(U.uSize, face ? g.Wf : g.Ws, g.Hs);

@@ -232,8 +232,9 @@
       g.sw.style.transform = "rotate(" + g.a.toFixed(4) + "rad) skewX(" + (-lag).toFixed(4) + "rad) scale(" + (1 + 0.045 * g.lift).toFixed(4) + ")";
       g.front.style.opacity = g.face ? 1 : 0;
       g.side.style.opacity = g.face ? 0 : 1;
-      g.front.style.transform = "translateX(-50%) rotateY(" + ((1 - f) * 86 + g.yaw).toFixed(2) + "deg)";
-      g.side.style.transform = "translateX(-50%) rotateY(" + (-f * 70).toFixed(2) + "deg)";
+      var dir = g.p.turn || 1;
+      g.front.style.transform = "translateX(-50%) rotateY(" + (dir * (1 - f) * 86 + g.yaw).toFixed(2) + "deg)";
+      g.side.style.transform = "translateX(-50%) rotateY(" + (-dir * f * 70).toFixed(2) + "deg)";
     });
   }
 
