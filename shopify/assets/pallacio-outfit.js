@@ -145,6 +145,7 @@
     });
     this.modal.querySelector("[data-pof-name]").textContent = data.name;
     this.stage.innerHTML = card.querySelector("[data-pof-fit]").innerHTML;
+    this.stage.classList.toggle("pof__fit--photo", !!this.stage.querySelector(".pof__look"));
     Array.prototype.forEach.call(this.stage.querySelectorAll("img"), function (img) { img.loading = "eager"; img.sizes = "(max-width: 799px) 62vw, 480px"; });
     this.list.innerHTML = this.items.map(function (it, i) { return '<li class="pof-item" data-i="' + i + '"></li>'; }).join("");
     Array.prototype.forEach.call(this.list.children, function (row, i) { self.renderItem(row, self.items[i]); });

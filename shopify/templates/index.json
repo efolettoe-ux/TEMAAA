@@ -2396,76 +2396,217 @@
     "pallacio_outfit_completo": {
       "type": "pallacio-outfit-completo",
       "blocks": {
-        "look_1": {
+        "look_01": {
           "type": "outfit",
           "settings": {
             "name": "Look 01",
-            "top": "after-party",
-            "top_colour": "Preta",
-            "bottom": "yacht-swimshorts"
+            "look_image": "shopify://shop_images/pallacio-outfit-01.jpg",
+            "top": "afro-t-shirt",
+            "top_colour": "Off White"
           }
         },
-        "look_2": {
+        "look_02": {
           "type": "outfit",
           "settings": {
             "name": "Look 02",
-            "top": "afro-t-shirt",
-            "top_colour": "Off White",
-            "bottom": "caviar-swimshorts"
+            "look_image": "shopify://shop_images/pallacio-outfit-02.jpg",
+            "top": "airdrop",
+            "top_colour": "Branca"
           }
         },
-        "look_3": {
+        "look_03": {
           "type": "outfit",
           "settings": {
             "name": "Look 03",
-            "top": "another",
-            "top_colour": "Preta",
-            "bottom": "azulejo-swimshorts"
+            "look_image": "shopify://shop_images/pallacio-outfit-03.jpg",
+            "top": "after-party",
+            "top_colour": "Preta"
           }
         },
-        "look_4": {
+        "look_04": {
           "type": "outfit",
           "settings": {
             "name": "Look 04",
-            "top": "airdrop",
-            "top_colour": "Branca",
-            "bottom": "pearl-swimshorts"
+            "look_image": "shopify://shop_images/pallacio-outfit-04.jpg",
+            "top": "bilionario",
+            "top_colour": "Off White"
           }
         },
-        "look_5": {
+        "look_05": {
           "type": "outfit",
           "settings": {
             "name": "Look 05",
-            "top": "amalfi-coast",
-            "top_colour": "Branca",
-            "bottom": "marina-swimshorts"
+            "look_image": "shopify://shop_images/pallacio-outfit-05.jpg",
+            "top": "another",
+            "top_colour": "Preta"
           }
         },
-        "look_6": {
+        "look_06": {
           "type": "outfit",
           "settings": {
             "name": "Look 06",
-            "top": "bilionario",
-            "top_colour": "Off White",
-            "bottom": "fume-swimshorts"
+            "look_image": "shopify://shop_images/pallacio-outfit-06.jpg",
+            "top": "amalfi-coast",
+            "top_colour": "Branca"
+          }
+        },
+        "look_07": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 07",
+            "look_image": "shopify://shop_images/pallacio-outfit-07.jpg",
+            "top": "fake",
+            "top_colour": "Branca"
+          }
+        },
+        "look_08": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 08",
+            "look_image": "shopify://shop_images/pallacio-outfit-08.jpg",
+            "top": "capri-t-shirt",
+            "top_colour": "Off White"
+          }
+        },
+        "look_09": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 09",
+            "look_image": "shopify://shop_images/pallacio-outfit-09.jpg",
+            "top": "matcha",
+            "top_colour": "Preta"
+          }
+        },
+        "look_10": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 10",
+            "look_image": "shopify://shop_images/pallacio-outfit-10.jpg",
+            "top": "birkin",
+            "top_colour": "Preta"
+          }
+        },
+        "look_11": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 11",
+            "look_image": "shopify://shop_images/pallacio-outfit-11.jpg",
+            "top": "backstage",
+            "top_colour": "Azul Marinho"
+          }
+        },
+        "look_12": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 12",
+            "look_image": "shopify://shop_images/pallacio-outfit-12.jpg",
+            "top": "bonjour-t-shirt",
+            "top_colour": "Branca"
+          }
+        },
+        "look_13": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 13",
+            "look_image": "shopify://shop_images/pallacio-outfit-13.jpg",
+            "top": "already-late",
+            "top_colour": "Branca"
+          }
+        },
+        "look_14": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 14",
+            "look_image": "shopify://shop_images/pallacio-outfit-14.jpg",
+            "top": "champagne",
+            "top_colour": "Preta"
+          }
+        },
+        "look_15": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 15",
+            "look_image": "shopify://shop_images/pallacio-outfit-15.jpg",
+            "top": "caprese",
+            "top_colour": "Preta"
+          }
+        },
+        "look_16": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 16",
+            "look_image": "shopify://shop_images/pallacio-outfit-16.jpg",
+            "top": "lambo-t-shirt",
+            "top_colour": "Branca"
+          }
+        },
+        "look_17": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 17",
+            "look_image": "shopify://shop_images/pallacio-outfit-17.jpg",
+            "top": "god-is-a-dj-t-shirt",
+            "top_colour": "Branca"
+          }
+        },
+        "look_18": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 18",
+            "look_image": "shopify://shop_images/pallacio-outfit-18.jpg",
+            "top": "expensive-t-shirt",
+            "top_colour": "Preta"
+          }
+        },
+        "look_19": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 19",
+            "look_image": "shopify://shop_images/pallacio-outfit-19.jpg",
+            "top": "limoncello-t-shirt",
+            "top_colour": "Off White"
+          }
+        },
+        "look_20": {
+          "type": "outfit",
+          "settings": {
+            "name": "Look 20",
+            "look_image": "shopify://shop_images/pallacio-outfit-20.jpg",
+            "top": "make-money",
+            "top_colour": "Preta"
           }
         }
       },
       "block_order": [
-        "look_1",
-        "look_2",
-        "look_3",
-        "look_4",
-        "look_5",
-        "look_6"
+        "look_01",
+        "look_02",
+        "look_03",
+        "look_04",
+        "look_05",
+        "look_06",
+        "look_07",
+        "look_08",
+        "look_09",
+        "look_10",
+        "look_11",
+        "look_12",
+        "look_13",
+        "look_14",
+        "look_15",
+        "look_16",
+        "look_17",
+        "look_18",
+        "look_19",
+        "look_20"
       ],
       "settings": {
-        "eyebrow": "Compre o fit inteiro",
+        "eyebrow": "Compre o fit inteiro!",
         "title": "Outfit completo",
         "heading_color": "#236eae",
         "add_label": "Adicionar o fit à sacola",
         "padding_top": 40,
-        "padding_bottom": 40
+        "padding_bottom": 40,
+        "show_meta": false
       }
     }
   },

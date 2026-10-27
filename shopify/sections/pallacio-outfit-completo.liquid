@@ -44,7 +44,12 @@
           assign count = 0
         -%}
         <li class="pof__slide" {{ block.shopify_attributes }}>
-          <button class="pof__card" type="button" data-pof-open aria-haspopup="dialog">
+          <button class="pof__card" type="button" data-pof-open aria-haspopup="dialog" aria-label="{{ look_name | escape }}">
+            {%- if block.settings.look_image != blank -%}
+            <span class="pof__fit pof__fit--photo" data-pof-fit>
+              {{- block.settings.look_image | image_url: width: 1200 | image_tag: loading: 'lazy', widths: '360,500,700,900,1200', sizes: '(max-width: 699px) 62vw, (max-width: 1299px) 25vw, 17vw', alt: look_name, class: 'pof__look', draggable: 'false' -}}
+            </span>
+            {%- else -%}
             <span class="pof__fit" data-pof-fit>
               {%- for role in roles -%}
                 {%- liquid
@@ -96,7 +101,8 @@
                 {%- endif -%}
               {%- endfor -%}
             </span>
-            <span class="pof__meta">
+            {%- endif -%}
+            <span class="pof__meta"{% unless section.settings.show_meta %} hidden{% endunless %}>
               <span class="pof__name">{{ look_name | escape }}</span>
               {%- if count > 0 -%}<span class="pof__price">{{ count }} peças · {{ total | money }}</span>{%- endif -%}
             </span>
@@ -205,16 +211,18 @@
     { "type": "text", "id": "title", "label": "Título", "default": "Outfit completo" },
     { "type": "color", "id": "heading_color", "label": "Cor do título", "default": "#236eae" },
     { "type": "text", "id": "add_label", "label": "Botão do pop-up", "default": "Adicionar o fit à sacola" },
+    { "type": "checkbox", "id": "show_meta", "label": "Mostrar nome e preço embaixo do look", "default": false },
     { "type": "range", "id": "padding_top", "label": "Espaço acima", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 40 },
     { "type": "range", "id": "padding_bottom", "label": "Espaço abaixo", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 40 }
   ],
-  "max_blocks": 12,
+  "max_blocks": 24,
   "blocks": [
     {
       "type": "outfit",
       "name": "Look",
       "settings": [
-        { "type": "text", "id": "name", "label": "Nome do look", "info": "Aparece embaixo do look e no pop-up." },
+        { "type": "text", "id": "name", "label": "Nome do look", "info": "Aparece no pop-up." },
+        { "type": "image_picker", "id": "look_image", "label": "Foto do look inteiro", "info": "Flat lay com todas as peças (fundo branco). Se vazio, o look é montado com as fotos de cada peça." },
         { "type": "header", "content": "Camiseta / parte de cima" },
         { "type": "product", "id": "top", "label": "Produto" },
         { "type": "text", "id": "top_colour", "label": "Cor", "info": "Igual ao nome da cor no produto. Vazio usa a cor da foto principal." },
