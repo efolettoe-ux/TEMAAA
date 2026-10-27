@@ -93,19 +93,21 @@
     });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && self.isOpen) self.close(); });
 
-    this.list.addEventListener("click", function (e) {
-      var b = e.target.closest("button");
-      if (!b || b.disabled) return;
-      var row = b.closest("[data-i]"), it = self.items[+row.getAttribute("data-i")];
-      if (b.hasAttribute("data-toggle")) it.on = !it.on;
-      else if (b.hasAttribute("data-opt")) {
-        var k = +b.getAttribute("data-opt"), v = b.getAttribute("data-value");
-        it.sel[k] = it.sel[k] === v && k !== it.colourIndex ? null : v;
+    /* marcar/desmarcar a peça e escolher cor e tamanho nos seletores */
+    this.list.addEventListener("change", function (e) {
+      var el = e.target, row = el.closest("[data-i]");
+      if (!row) return;
+      var it = self.items[+row.getAttribute("data-i")];
+      if (el.hasAttribute("data-toggle")) it.on = el.checked;
+      else if (el.hasAttribute("data-opt")) {
+        var k = +el.getAttribute("data-opt");
+        it.sel[k] = el.value || null;
         /* trocou a cor: se o tamanho escolhido não existe nessa cor, limpa */
         if (k === it.colourIndex) it.sel.forEach(function (s, j) { if (j !== k && s && !self.variantFor(it, j, s)) it.sel[j] = null; });
       }
       self.renderItem(row, it);
-      if (b.hasAttribute("data-opt") && +b.getAttribute("data-opt") === it.colourIndex) self.restage(it);
+      if (el.hasAttribute("data-opt") && +el.getAttribute("data-opt") === it.colourIndex) self.restage(it);
+      self.msg.textContent = "";
       self.refresh();
     });
     this.addBtn.addEventListener("click", function () { self.add(); });
@@ -140,6 +142,7 @@
       }
       if (it.colourIndex >= 0) it.sel[it.colourIndex] = it.pre || (it.variants.filter(function (v) { return v.a; })[0] || it.variants[0]).o[it.colourIndex];
       it.soldOut = !it.variants.some(function (v) { return v.a; });
+      it.err = false;
       it.on = !it.soldOut;
       return it;
     });
@@ -171,29 +174,29 @@
 
   Outfit.prototype.renderItem = function (row, it) {
     var self = this, v = this.chosen(it) || this.variantFor(it, null, null) || it.variants[0];
-    var img = (v && v.img) || it.image;
-    var html = '<div class="pof-item__media">' + (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : "") + "</div>";
-    html += '<div class="pof-item__body"><div class="pof-item__head"><div><a class="pof-item__title" href="' + esc(it.url) + '">' + esc(it.title) + "</a>";
-    html += '<span class="pof-item__price">' + money(v ? v.p : 0, this.format) + "</span></div>";
-    html += '<button type="button" class="pof-item__toggle" data-toggle aria-pressed="' + it.on + '"' + (it.soldOut ? " disabled" : "") + "><i></i>" + (it.soldOut ? "Esgotado" : "No fit") + "</button></div>";
-    if (!it.soldOut) it.options.forEach(function (opt, k) {
-      if (opt.values.length === 1 && /^default/i.test(opt.values[0])) return;
-      var isColour = k === it.colourIndex;
-      html += '<div class="pof-opt"><div class="pof-opt__info"><span>' + esc(opt.name) + ":</span>";
-      if (isColour) html += "<span>" + esc(it.sel[k] || "") + "</span>";
-      html += '</div><div class="pof-opt__values" role="group" aria-label="' + esc(opt.name) + '">';
-      opt.values.forEach(function (val) {
-        var can = !!self.variantFor(it, k, val), on = it.sel[k] === val;
-        if (isColour) {
-          var c = tone(val);
-          html += '<button type="button" class="pof-swatch' + (dark(c) ? " is-dark" : "") + '" style="--c:' + c + '" data-opt="' + k + '" data-value="' + esc(val) +
-            '" aria-pressed="' + on + '" aria-label="' + esc(val) + '" title="' + esc(val) + '"' + (can ? "" : " disabled") + "></button>";
-        } else {
-          html += '<button type="button" class="pof-size" data-opt="' + k + '" data-value="' + esc(val) + '" aria-pressed="' + on + '"' + (can ? "" : " disabled") + ">" + esc(val) + "</button>";
-        }
+    var img = (v && v.img) || it.image, id = "pof-" + row.getAttribute("data-i") + "-" + Math.random().toString(36).slice(2, 7);
+    var html = '<label class="pof-item__check"><input type="checkbox" data-toggle' + (it.on ? " checked" : "") + (it.soldOut ? " disabled" : "") +
+      ' aria-label="Levar ' + esc(it.title) + '"><i aria-hidden="true"></i></label>';
+    html += '<a class="pof-item__media" href="' + esc(it.url) + '" tabindex="-1">' + (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : "") + "</a>";
+    html += '<div class="pof-item__body"><a class="pof-item__title" href="' + esc(it.url) + '">' + esc(it.title) + "</a>";
+    html += '<span class="pof-item__price">' + money(v ? v.p : 0, this.format) + "</span>";
+    if (it.soldOut) html += '<span class="pof-item__sold">Esgotado</span>';
+    else {
+      html += '<div class="pof-item__opts">';
+      it.options.forEach(function (opt, k) {
+        if (opt.values.length === 1 && /^default/i.test(opt.values[0])) return;
+        var isColour = k === it.colourIndex, sid = id + "-" + k;
+        html += '<div class="pof-field"><label class="pof-field__label" for="' + sid + '">' + esc(opt.name) + "</label>" +
+          '<div class="pof-field__select' + (it.err && it.sel[k] == null ? " is-error" : "") + '"><select id="' + sid + '" data-opt="' + k + '">';
+        if (!isColour) html += '<option value=""' + (it.sel[k] == null ? " selected" : "") + ">Selecione</option>";
+        opt.values.forEach(function (val) {
+          var can = !!self.variantFor(it, k, val);
+          html += '<option value="' + esc(val) + '"' + (it.sel[k] === val ? " selected" : "") + (can ? "" : " disabled") + ">" + esc(val) + (can ? "" : " — esgotado") + "</option>";
+        });
+        html += '</select><svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></div></div>';
       });
-      html += "</div></div>";
-    });
+      html += "</div>";
+    }
     html += "</div>";
     row.innerHTML = html;
     row.classList.toggle("is-off", !it.on);
@@ -210,23 +213,33 @@
   };
 
   Outfit.prototype.refresh = function () {
-    var self = this, total = 0, missing = 0, picked = 0;
+    var self = this, total = 0, picked = 0;
     this.items.forEach(function (it) {
       if (!it.on) return;
-      var v = self.chosen(it);
-      if (v) { total += v.p; picked++; }
-      else { missing++; var g = self.variantFor(it, null, null) || it.variants[0]; total += g ? g.p : 0; }
+      picked++;
+      var v = self.chosen(it) || self.variantFor(it, null, null) || it.variants[0];
+      total += v ? v.p : 0;
     });
-    this.totalEl.textContent = money(total, this.format);
-    var label = this.root.getAttribute("data-label-add");
-    if (missing) label = this.root.getAttribute("data-label-choose");
-    this.addBtn.textContent = label;
-    this.addBtn.disabled = !!missing || !picked;
+    this.totalEl.textContent = picked ? money(total, this.format) : "—";
+    this.addBtn.textContent = this.root.getAttribute("data-label-add");
+    this.addBtn.disabled = !picked;
   };
 
   Outfit.prototype.add = function () {
     var self = this, btn = this.addBtn;
-    var items = this.items.filter(function (it) { return it.on; }).map(function (it) { return { id: self.chosen(it).id, quantity: 1 }; });
+    var on = this.items.filter(function (it) { return it.on; });
+    var missing = on.filter(function (it) { return !self.chosen(it); });
+    if (missing.length) {
+      /* falta tamanho: marca o seletor e avisa */
+      Array.prototype.forEach.call(this.list.children, function (row, i) {
+        var it = self.items[i]; it.err = it.on && !self.chosen(it); self.renderItem(row, it);
+      });
+      this.msg.textContent = this.root.getAttribute("data-label-choose");
+      var first = this.list.querySelector(".is-error select");
+      if (first) first.focus();
+      return;
+    }
+    var items = on.map(function (it) { return { id: self.chosen(it).id, quantity: 1 }; });
     if (!items.length || btn.classList.contains("is-busy")) return;
     btn.classList.add("is-busy");
     this.msg.textContent = "";

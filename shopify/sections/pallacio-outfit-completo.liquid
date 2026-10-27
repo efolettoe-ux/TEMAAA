@@ -18,7 +18,7 @@
   aria-labelledby="pof-title-{{ sid }}"
   data-money-format="{{ shop.money_format | strip_html | escape }}"
   data-label-add="{{ section.settings.add_label | escape }}"
-  data-label-choose="Escolha os tamanhos"
+  data-label-choose="Escolha o tamanho das peças marcadas."
   data-label-added="Fit adicionado"
   data-label-error="Não foi possível adicionar. Tente de novo."
   style="--pof-pt: {{ section.settings.padding_top }}px; --pof-pb: {{ section.settings.padding_bottom }}px; --pof-head: {{ section.settings.heading_color }};"
@@ -188,13 +188,17 @@
       </button>
       <div class="pof-modal__stage"><span class="pof__fit pof__fit--big" data-pof-stage></span></div>
       <div class="pof-modal__panel">
-        <p class="pof__eyebrow">{{ section.settings.eyebrow | escape }}</p>
-        <h3 class="pof-modal__title" id="pof-modal-title-{{ sid }}" data-pof-name></h3>
+        <div class="pof-modal__intro">
+          <p class="pof__eyebrow">{{ section.settings.title | escape }}</p>
+          <h3 class="pof-modal__title" id="pof-modal-title-{{ sid }}" data-pof-name></h3>
+          <p class="pof-modal__lead">Escolha a cor e o tamanho das peças que quer levar.</p>
+        </div>
         <ul class="pof-modal__items" data-pof-items role="list"></ul>
         <div class="pof-modal__foot">
-          <div class="pof-modal__total"><span>Total do fit</span><strong data-pof-total></strong></div>
+          <div class="pof-modal__total"><span>Subtotal das peças selecionadas</span><strong data-pof-total></strong></div>
           <button class="pof-modal__add" type="button" data-pof-add></button>
           <p class="pof-modal__msg" data-pof-msg role="status" aria-live="polite"></p>
+          <p class="pof-modal__note">Disponíveis para compra: as peças listadas acima. Os demais itens do look são inspiração.</p>
         </div>
       </div>
     </div>
@@ -210,7 +214,7 @@
     { "type": "text", "id": "eyebrow", "label": "Texto pequeno", "default": "Compre o fit inteiro" },
     { "type": "text", "id": "title", "label": "Título", "default": "Outfit completo" },
     { "type": "color", "id": "heading_color", "label": "Cor do título", "default": "#236eae" },
-    { "type": "text", "id": "add_label", "label": "Botão do pop-up", "default": "Adicionar o fit à sacola" },
+    { "type": "text", "id": "add_label", "label": "Botão do pop-up", "default": "Adicionar à sacola" },
     { "type": "checkbox", "id": "show_meta", "label": "Mostrar nome e preço embaixo do look", "default": false },
     { "type": "range", "id": "padding_top", "label": "Espaço acima", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 40 },
     { "type": "range", "id": "padding_bottom", "label": "Espaço abaixo", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 40 }
