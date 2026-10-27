@@ -187,31 +187,20 @@
       return im.decode ? im.decode().catch(function () {}) : new Promise(function (r) { im.onload = im.onerror = r; });
     }
 
-    var api = { ready: false, shadow: true, canvas: canvas };
-
-    function prepare(g) {
-      g.shadeK = shadeStrength(g.front);
-      g.sideTilt = restTilt(g.side);
-      g.tex = { front: texture(g.front), side: texture(g.side), frontSoft: texture(soft(g.front)), sideSoft: texture(soft(g.side)) };
-    }
+    var api = { ready: false };
 
     api.load = function () {
       var ims = [];
       G.forEach(function (g) { ims.push(g.front, g.side); });
       return Promise.all(ims.map(decoded)).then(function () {
         if (ims.some(function (im) { return !im.naturalWidth; })) throw new Error("foto não carregou");
-        G.forEach(prepare);
+        G.forEach(function (g) {
+          g.shadeK = shadeStrength(g.front);
+          g.sideTilt = restTilt(g.side);
+          g.tex = { front: texture(g.front), side: texture(g.side), frontSoft: texture(soft(g.front)), sideSoft: texture(soft(g.side)) };
+        });
         rail.appendChild(canvas);
         api.ready = true;
-      });
-    };
-
-    /* uma peça a mais depois de carregado (o pop-up prepara cada foto quando precisa) */
-    api.add = function (g) {
-      return Promise.all([decoded(g.front), decoded(g.side)]).then(function () {
-        if (!g.front.naturalWidth || !g.side.naturalWidth) throw new Error("foto não carregou");
-        if (!g.tex) prepare(g);
-        return g;
       });
     };
 
@@ -262,7 +251,7 @@
       gl.uniform1f(U.uWallZ, -geo.h * 0.28);
       var shown = G.filter(function (g) { return !g.hidden; });
       gl.uniform1f(U.uShadow, 1);
-      if (api.shadow) shown.forEach(function (g) { garment(g, true, clock); });
+      shown.forEach(function (g) { garment(g, true, clock); });
       gl.uniform1f(U.uShadow, 0);
       shown.slice().sort(function (a, b) { return (a.lift - b.lift) || ((a.i === active) - (b.i === active)); })
         .forEach(function (g) { garment(g, false, clock); });
