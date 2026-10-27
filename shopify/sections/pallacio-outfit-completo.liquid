@@ -1,0 +1,245 @@
+{%- comment -%}
+  PALLACIO · Outfit completo
+  Carrossel de looks montados peça por peça (camiseta, short, boné, acessório,
+  calçado), cada peça com fundo transparente. Ao clicar num look abre o "fit":
+  todas as peças com cor e tamanho, total e um botão que põe o fit inteiro na
+  sacola. Cada peça pode vir de um produto ou só de uma imagem.
+{%- endcomment -%}
+{%- liquid
+  assign sid = section.id
+  assign roles = 'top,bottom,cap,acc,shoes' | split: ','
+-%}
+{{ 'pallacio-outfit.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'pallacio-outfit.js' | asset_url }}" defer></script>
+
+<section
+  class="pof"
+  data-pof
+  aria-labelledby="pof-title-{{ sid }}"
+  data-money-format="{{ shop.money_format | strip_html | escape }}"
+  data-label-add="{{ section.settings.add_label | escape }}"
+  data-label-choose="Escolha os tamanhos"
+  data-label-added="Fit adicionado"
+  data-label-error="Não foi possível adicionar. Tente de novo."
+  style="--pof-pt: {{ section.settings.padding_top }}px; --pof-pb: {{ section.settings.padding_bottom }}px; --pof-head: {{ section.settings.heading_color }};"
+>
+  <header class="pof__head">
+    {%- if section.settings.eyebrow != blank -%}<p class="pof__eyebrow">{{ section.settings.eyebrow | escape }}</p>{%- endif -%}
+    <h2 class="pof__title" id="pof-title-{{ sid }}">{{ section.settings.title | escape }}</h2>
+  </header>
+
+  <div class="pof__carousel">
+    <button class="pof__arrow pof__arrow--prev" type="button" data-pof-prev aria-label="Looks anteriores" hidden>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+
+    <ul class="pof__track" data-pof-track role="list">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign look_name = block.settings.name
+          if look_name == blank
+            assign look_name = 'Look ' | append: forloop.index
+          endif
+          assign total = 0
+          assign count = 0
+        -%}
+        <li class="pof__slide" {{ block.shopify_attributes }}>
+          <button class="pof__card" type="button" data-pof-open aria-haspopup="dialog">
+            <span class="pof__fit" data-pof-fit>
+              {%- for role in roles -%}
+                {%- liquid
+                  assign p = block.settings[role]
+                  assign img_key = role | append: '_image'
+                  assign col_key = role | append: '_colour'
+                  assign img = block.settings[img_key]
+                  assign colour = block.settings[col_key] | strip | downcase
+                  assign pre = blank
+                  if p != blank
+                    if colour != blank
+                      for v in p.variants
+                        for o in v.options
+                          assign od = o | strip | downcase
+                          if od == colour
+                            assign pre = v
+                            break
+                          endif
+                        endfor
+                        if pre != blank
+                          break
+                        endif
+                      endfor
+                    endif
+                    if pre == blank and p.featured_media
+                      for v in p.variants
+                        if v.featured_media.id == p.featured_media.id
+                          assign pre = v
+                          break
+                        endif
+                      endfor
+                    endif
+                    if img == blank
+                      if pre != blank and pre.featured_media
+                        assign img = pre.featured_media.preview_image
+                      else
+                        assign img = p.featured_media.preview_image
+                      endif
+                    endif
+                    assign priced = pre | default: p.selected_or_first_available_variant
+                    assign total = total | plus: priced.price
+                    assign count = count | plus: 1
+                  endif
+                -%}
+                {%- if img != blank -%}
+                  <span class="pof__piece pof__piece--{{ role }}">
+                    {{- img | image_url: width: 700 | image_tag: loading: 'lazy', widths: '240,360,500,700', sizes: '(max-width: 699px) 40vw, 18vw', alt: '', class: 'pof__img', draggable: 'false' -}}
+                  </span>
+                {%- endif -%}
+              {%- endfor -%}
+            </span>
+            <span class="pof__meta">
+              <span class="pof__name">{{ look_name | escape }}</span>
+              {%- if count > 0 -%}<span class="pof__price">{{ count }} peças · {{ total | money }}</span>{%- endif -%}
+            </span>
+          </button>
+
+          {%- comment -%} dados do fit para o pop-up {%- endcomment -%}
+          <script type="application/json" data-pof-data>
+            {
+              "name": {{ look_name | json }},
+              "items": [
+                {%- assign first = true -%}
+                {%- for role in roles -%}
+                  {%- liquid
+                    assign p = block.settings[role]
+                    if p == blank
+                      continue
+                    endif
+                    assign img_key = role | append: '_image'
+                    assign col_key = role | append: '_colour'
+                    assign img = block.settings[img_key]
+                    assign colour = block.settings[col_key] | strip | downcase
+                    assign pre = blank
+                    if colour != blank
+                      for v in p.variants
+                        for o in v.options
+                          assign od = o | strip | downcase
+                          if od == colour
+                            assign pre = v
+                            break
+                          endif
+                        endfor
+                        if pre != blank
+                          break
+                        endif
+                      endfor
+                    endif
+                    if pre == blank and p.featured_media
+                      for v in p.variants
+                        if v.featured_media.id == p.featured_media.id
+                          assign pre = v
+                          break
+                        endif
+                      endfor
+                    endif
+                    assign cidx = -1
+                    for opt in p.options_with_values
+                      assign on = opt.name | downcase
+                      if on == 'cor' or on == 'color' or on == 'colour' or on == 'cores'
+                        assign cidx = forloop.index0
+                      endif
+                    endfor
+                  -%}
+                  {%- unless first -%},{%- endunless -%}{%- assign first = false -%}
+                  {
+                    "role": {{ role | json }},
+                    "title": {{ p.title | json }},
+                    "url": {{ p.url | json }},
+                    "colourIndex": {{ cidx }},
+                    "pre": {% if pre != blank and cidx >= 0 %}{{ pre.options[cidx] | json }}{% else %}null{% endif %},
+                    "image": {% if img != blank %}{{ img | image_url: width: 300 | json }}{% elsif p.featured_media %}{{ p.featured_media.preview_image | image_url: width: 300 | json }}{% else %}null{% endif %},
+                    "options": [{%- for opt in p.options_with_values -%}{%- unless forloop.first -%},{%- endunless -%}{"name": {{ opt.name | json }}, "values": {{ opt.values | json }}}{%- endfor -%}],
+                    "variants": [{%- for v in p.variants -%}{%- unless forloop.first -%},{%- endunless -%}{"id": {{ v.id }}, "o": {{ v.options | json }}, "a": {{ v.available }}, "p": {{ v.price }}, "img": {% if v.featured_media %}{{ v.featured_media.preview_image | image_url: width: 300 | json }}{% else %}null{% endif %}}{%- endfor -%}]
+                  }
+                {%- endfor -%}
+              ]
+            }
+          </script>
+        </li>
+      {%- endfor -%}
+    </ul>
+
+    <button class="pof__arrow pof__arrow--next" type="button" data-pof-next aria-label="Próximos looks" hidden>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+
+  {%- comment -%} O pop-up do fit; o script leva para o body. {%- endcomment -%}
+  <div class="pof-modal" data-pof-modal role="dialog" aria-modal="true" aria-labelledby="pof-modal-title-{{ sid }}" hidden>
+    <div class="pof-modal__scrim" data-pof-close></div>
+    <div class="pof-modal__box">
+      <button class="pof-modal__close" type="button" data-pof-close aria-label="Fechar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="pof-modal__stage"><span class="pof__fit pof__fit--big" data-pof-stage></span></div>
+      <div class="pof-modal__panel">
+        <p class="pof__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        <h3 class="pof-modal__title" id="pof-modal-title-{{ sid }}" data-pof-name></h3>
+        <ul class="pof-modal__items" data-pof-items role="list"></ul>
+        <div class="pof-modal__foot">
+          <div class="pof-modal__total"><span>Total do fit</span><strong data-pof-total></strong></div>
+          <button class="pof-modal__add" type="button" data-pof-add></button>
+          <p class="pof-modal__msg" data-pof-msg role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Outfit completo",
+  "tag": "div",
+  "class": "shopify-section--pallacio-outfit",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Texto pequeno", "default": "Compre o fit inteiro" },
+    { "type": "text", "id": "title", "label": "Título", "default": "Outfit completo" },
+    { "type": "color", "id": "heading_color", "label": "Cor do título", "default": "#236eae" },
+    { "type": "text", "id": "add_label", "label": "Botão do pop-up", "default": "Adicionar o fit à sacola" },
+    { "type": "range", "id": "padding_top", "label": "Espaço acima", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "label": "Espaço abaixo", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 40 }
+  ],
+  "max_blocks": 12,
+  "blocks": [
+    {
+      "type": "outfit",
+      "name": "Look",
+      "settings": [
+        { "type": "text", "id": "name", "label": "Nome do look", "info": "Aparece embaixo do look e no pop-up." },
+        { "type": "header", "content": "Camiseta / parte de cima" },
+        { "type": "product", "id": "top", "label": "Produto" },
+        { "type": "text", "id": "top_colour", "label": "Cor", "info": "Igual ao nome da cor no produto. Vazio usa a cor da foto principal." },
+        { "type": "image_picker", "id": "top_image", "label": "Imagem (troca a do produto)", "info": "PNG com fundo transparente." },
+        { "type": "header", "content": "Short / calça" },
+        { "type": "product", "id": "bottom", "label": "Produto" },
+        { "type": "text", "id": "bottom_colour", "label": "Cor" },
+        { "type": "image_picker", "id": "bottom_image", "label": "Imagem (troca a do produto)" },
+        { "type": "header", "content": "Boné" },
+        { "type": "product", "id": "cap", "label": "Produto" },
+        { "type": "text", "id": "cap_colour", "label": "Cor" },
+        { "type": "image_picker", "id": "cap_image", "label": "Imagem", "info": "Só a imagem aparece no look; com produto, entra no pop-up." },
+        { "type": "header", "content": "Acessório" },
+        { "type": "product", "id": "acc", "label": "Produto" },
+        { "type": "text", "id": "acc_colour", "label": "Cor" },
+        { "type": "image_picker", "id": "acc_image", "label": "Imagem" },
+        { "type": "header", "content": "Calçado" },
+        { "type": "product", "id": "shoes", "label": "Produto" },
+        { "type": "text", "id": "shoes_colour", "label": "Cor" },
+        { "type": "image_picker", "id": "shoes_image", "label": "Imagem" }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Outfit completo", "blocks": [{ "type": "outfit" }, { "type": "outfit" }, { "type": "outfit" }] }
+  ]
+}
+{% endschema %}
