@@ -43,13 +43,13 @@
     return {
       i: i, p: p, el: el, sw: el.querySelector(".swing"), front: front, side: side,
       x: 0, vx: 0, tx: 0, w: 0, py: 0, vy: 0, delay: 0,
-      t: 0, vt: 0, th: 0, vth: 0, a: 0, va: 0, b: 0, vb: 0, lift: 0, vl: 0, yaw: 0,
+      t: 0, vt: 0, tp: 0, th: 0, vth: 0, wasOn: false, a: 0, va: 0, b: 0, vb: 0, lift: 0, vl: 0, yaw: 0,
       face: false, hidden: false, Wf: 0, Ws: 0
     };
   });
 
   var geo = { w: 0, h: 0, slot: 0 };
-  var active = -1, yawAim = 0, clock = 0;
+  var active = -1, activeAt = 0, intent = 0, yawAim = 0, clock = 0;
   var hand = { on: false, x: 0, y: 0, vx: 0, t: 0 };
   var grab = null, down = null, suppressClick = false;
 
@@ -96,7 +96,7 @@
 
   function settleAll() {
     G.forEach(function (g) {
-      g.t = g.th = g.i === active ? 1 : 0; g.vt = g.vth = 0;
+      g.t = g.th = g.tp = g.i === active ? 1 : 0; g.vt = g.vth = 0; g.wasOn = g.t > 0;
       g.face = g.t > 0.5;
       g.a = g.va = g.b = g.vb = 0;
       g.lift = g.i === active && !small.matches ? 1 : 0; g.vl = 0;
@@ -112,7 +112,10 @@
     layout();
     var L = geo.h * 0.55;
     for (var i = 0; i < N; i++) {
-      var g = G[i], on = i === active;
+      /* com o mouse, a peça só começa a virar depois de um instante parado nela */
+      var g = G[i], on = i === active && clock - activeAt >= intent;
+      if (on && !g.wasOn && !reduced) g.vy -= geo.h * 0.25; /* sai um pouco do cano ao ser escolhida */
+      g.wasOn = on;
 
       /* o gancho no cano */
       var ax = 90 * (g.tx - g.x) - 15 * g.vx;
@@ -122,9 +125,12 @@
       if (g.delay > 0) g.delay -= dt;
       else { var ay = 240 * -g.py - 20 * g.vy; g.vy += ay * dt; g.py += g.vy * dt; }
 
-      /* virar de frente: um pouco subamortecido, passa do ponto e volta */
-      var at = 230 * ((on ? 1 : 0) - g.t) - (on ? 26 : 21) * g.vt;
-      g.vt += at * dt; g.t = clamp(g.t + g.vt * dt, -0.12, 1.1);
+      /* Virar: uma linha do tempo, 360 ms para a frente e 280 ms de volta, com
+         começo e fim suavizados. Se mudar de ideia no meio, volta de onde está. */
+      var rate = on ? 1 / 0.36 : 1 / 0.28;
+      g.tp += clamp((on ? 1 : 0) - g.tp, -rate * dt, rate * dt);
+      var nt = g.tp * g.tp * (3 - 2 * g.tp);
+      g.vt = (nt - g.t) / dt; g.t = nt;
       /* a barra segue os ombros com atraso, por uma mola mais solta */
       var ath = 150 * (g.t - g.th) - 7 * g.vth;
       g.vth += ath * dt; g.th = clamp(g.th + g.vth * dt, -0.2, 1.2);
@@ -187,6 +193,7 @@
   }
 
   function moving() {
+    if (active >= 0 && clock - activeAt < intent) return true;
     for (var i = 0; i < N; i++) {
       var g = G[i];
       if (Math.abs(g.vx) > 0.3 || Math.abs(g.tx - g.x) > 0.3 || Math.abs(g.vy) > 0.3 || g.delay > 0 || Math.abs(g.py) > 0.3) return true;
@@ -239,13 +246,13 @@
 
   /* ---------------- Escolher uma peça ---------------- */
   var live = $("rail-live");
-  function setActive(i) {
+  /* hover: true quando a escolha vem do mouse passando (espera a intenção) */
+  function setActive(i, hover) {
     if (i === active) return;
     active = i;
-    if (i >= 0) {
-      live.textContent = PRODUCTS[i].name + ", " + brl(PRODUCTS[i].price);
-      if (!reduced) G[i].vy -= geo.h * 0.25;
-    }
+    activeAt = clock;
+    intent = hover ? 0.08 : 0;
+    if (i >= 0) live.textContent = PRODUCTS[i].name + ", " + brl(PRODUCTS[i].price);
     updateReadout();
     kick();
   }
@@ -292,7 +299,7 @@
     }
     if (grab) { grab.x = p[0]; grab.y = p[1]; kick(); return; }
     if (e.pointerType === "mouse" && finePointer.matches && !small.matches) {
-      setActive(hitTest(p[0]));
+      setActive(hitTest(p[0]), true);
       if (active >= 0) yawAim = clamp((p[0] - G[active].x) / (G[active].w / 2), -1, 1) * 14;
     }
     kick();

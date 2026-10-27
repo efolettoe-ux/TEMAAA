@@ -44,7 +44,7 @@
     this.q = function (s) { return el.querySelector(s); };
     this.rail = this.q("[data-pa3d-rail]");
     this.geo = { w: 0, h: 0, slot: 0 };
-    this.active = -1; this.yawAim = 0; this.clock = 0;
+    this.active = -1; this.activeAt = 0; this.intent = 0; this.yawAim = 0; this.clock = 0;
     this.hand = { on: false, x: 0, y: 0, vx: 0, t: 0 };
     this.grab = null; this.down = null; this.suppressClick = false;
     this.running = false; this.gl = null; this.open = false;
@@ -76,7 +76,7 @@
       return {
         i: i, p: p, el: b, sw: b.querySelector(".pa3d__swing"), front: front, side: side,
         x: 0, vx: 0, tx: 0, w: 0, py: 0, vy: 0, delay: 0,
-        t: 0, vt: 0, th: 0, vth: 0, a: 0, va: 0, b: 0, vb: 0, lift: 0, vl: 0, yaw: 0,
+        t: 0, vt: 0, tp: 0, th: 0, vth: 0, wasOn: false, a: 0, va: 0, b: 0, vb: 0, lift: 0, vl: 0, yaw: 0,
         face: false, hidden: false, Wf: 0, Ws: 0, Hs: 0
       };
     });
@@ -126,7 +126,7 @@
   Arara.prototype.settleAll = function () {
     var self = this;
     this.G.forEach(function (g) {
-      g.t = g.th = g.i === self.active ? 1 : 0; g.vt = g.vth = 0;
+      g.t = g.th = g.tp = g.i === self.active ? 1 : 0; g.vt = g.vth = 0; g.wasOn = g.t > 0;
       g.face = g.t > 0.5;
       g.a = g.va = g.b = g.vb = 0;
       g.lift = g.i === self.active && !small.matches ? 1 : 0; g.vl = 0;
@@ -143,7 +143,10 @@
     this.layout();
     var L = geo.h * 0.55;
     for (var i = 0; i < this.N; i++) {
-      var g = G[i], on = i === this.active;
+      /* com o mouse, a peça só começa a virar depois de um instante parado nela */
+      var g = G[i], on = i === this.active && this.clock - this.activeAt >= this.intent;
+      if (on && !g.wasOn && !reduced) g.vy -= geo.h * 0.25; /* sai um pouco do cano ao ser escolhida */
+      g.wasOn = on;
 
       /* o gancho no cano */
       var ax = 90 * (g.tx - g.x) - 15 * g.vx;
@@ -153,9 +156,12 @@
       if (g.delay > 0) g.delay -= dt;
       else { var ay = 240 * -g.py - 20 * g.vy; g.vy += ay * dt; g.py += g.vy * dt; }
 
-      /* virar de frente: um pouco subamortecido, passa do ponto e volta */
-      var at = 230 * ((on ? 1 : 0) - g.t) - (on ? 26 : 21) * g.vt;
-      g.vt += at * dt; g.t = clamp(g.t + g.vt * dt, -0.12, 1.1);
+      /* Virar: uma linha do tempo, 360 ms para a frente e 280 ms de volta, com
+         começo e fim suavizados. Se mudar de ideia no meio, volta de onde está. */
+      var rate = on ? 1 / 0.36 : 1 / 0.28;
+      g.tp += clamp((on ? 1 : 0) - g.tp, -rate * dt, rate * dt);
+      var nt = g.tp * g.tp * (3 - 2 * g.tp);
+      g.vt = (nt - g.t) / dt; g.t = nt;
       /* a barra segue os ombros com atraso, por uma mola mais solta */
       var ath = 150 * (g.t - g.th) - 7 * g.vth;
       g.vth += ath * dt; g.th = clamp(g.th + g.vth * dt, -0.2, 1.2);
@@ -216,6 +222,7 @@
   };
 
   Arara.prototype.moving = function () {
+    if (this.active >= 0 && this.clock - this.activeAt < this.intent) return true;
     for (var i = 0; i < this.N; i++) {
       var g = this.G[i];
       if (Math.abs(g.vx) > 0.3 || Math.abs(g.tx - g.x) > 0.3 || Math.abs(g.vy) > 0.3 || g.delay > 0 || Math.abs(g.py) > 0.3) return true;
@@ -261,13 +268,13 @@
   };
 
   /* ---------------- Escolher uma peça ---------------- */
-  Arara.prototype.setActive = function (i) {
+  /* hover: true quando a escolha vem do mouse passando (espera a intenção) */
+  Arara.prototype.setActive = function (i, hover) {
     if (i === this.active) return;
     this.active = i;
-    if (i >= 0) {
-      this.q("[data-pa3d-live]").textContent = this.P[i].name + (this.P[i].priceLabel ? ", " + this.P[i].priceLabel : "");
-      if (!reduced) this.G[i].vy -= this.geo.h * 0.25;
-    }
+    this.activeAt = this.clock;
+    this.intent = hover ? 0.08 : 0;
+    if (i >= 0) this.q("[data-pa3d-live]").textContent = this.P[i].name + (this.P[i].priceLabel ? ", " + this.P[i].priceLabel : "");
     this.readout();
     this.kick();
   };
@@ -333,7 +340,7 @@
       }
       if (self.grab) { self.grab.x = p[0]; self.grab.y = p[1]; self.kick(); return; }
       if (e.pointerType === "mouse" && finePointer.matches && !small.matches) {
-        self.setActive(self.hit(p[0]));
+        self.setActive(self.hit(p[0]), true);
         if (self.active >= 0) self.yawAim = clamp((p[0] - G[self.active].x) / (G[self.active].w / 2), -1, 1) * 14;
       }
       self.kick();
