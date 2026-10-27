@@ -403,31 +403,51 @@
     this.bindView();
   };
 
-  /* ---------------- Peça aberta ---------------- */
+  /* ---------------- Peça aberta ----------------
+     Pop-up como nos vídeos de referência: a arara desfocada atrás, a peça
+     pendurada no centro, setas para as vizinhas da arara, Frente/Costas,
+     etiquetas com as cores do produto, tamanhos da cor escolhida. */
   Arara.prototype.bindView = function () {
     var self = this;
-    /* o painel vai para o body: assim nenhum transform do tema prende o position: fixed */
+    /* o pop-up vai para o body: assim nenhum transform do tema prende o position: fixed */
     this.view = this.q("[data-pa3d-view]");
     document.body.appendChild(this.view);
+    /* leva junto o fundo da section e a cor de texto do tema */
+    var cs = getComputedStyle(this.el);
+    this.view.style.setProperty("--pa3d-bg", cs.getPropertyValue("--pa3d-bg").trim() || cs.backgroundColor);
+    this.view.style.setProperty("--pa3d-fg", cs.color);
+    this.view.style.color = cs.color;
     var q = function (s) { return self.view.querySelector(s); };
     this.vimg = q("[data-pa3d-vimg]");
     this.sizeGrid = q("[data-pa3d-sizes]");
     this.addBtn = q("[data-pa3d-add]");
+    this.tagList = q("[data-pa3d-colours]");
     this.sizeGrid.addEventListener("click", function (e) {
       var b = e.target.closest(".pa3d__size");
       if (!b || b.disabled) return;
       self.picked = Number(b.getAttribute("data-size"));
       self.sizes();
-      self.addBtn.focus({ preventScroll: true });
+    });
+    this.tagList.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-colour]");
+      if (b) self.pickColour(b.getAttribute("data-colour"));
     });
     this.addBtn.addEventListener("click", function () { self.add(); });
     Array.prototype.forEach.call(this.view.querySelectorAll("[data-face]"), function (b) {
-      b.addEventListener("click", function () { self.face(b.getAttribute("data-face")); });
+      b.addEventListener("click", function () { self.flip(b.getAttribute("data-face")); });
     });
     q("[data-pa3d-prev]").addEventListener("click", function () { self.stepTo(-1); });
     q("[data-pa3d-next]").addEventListener("click", function () { self.stepTo(1); });
     q("[data-pa3d-close]").addEventListener("click", function () { self.hide(); });
-    q("[data-pa3d-stage]").addEventListener("click", function (e) { if (e.target === e.currentTarget) self.hide(); });
+    q("[data-pa3d-stage]").addEventListener("click", function () { self.hide(); });
+    /* no celular, arrastar a peça para o lado troca de peça */
+    var sx = null, sy = null, piece = q(".pa3d__piece");
+    piece.addEventListener("pointerdown", function (e) { sx = e.clientX; sy = e.clientY; });
+    piece.addEventListener("pointerup", function (e) {
+      if (sx === null) return;
+      var dx = e.clientX - sx, dy = e.clientY - sy; sx = sy = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) self.stepTo(dx < 0 ? 1 : -1);
+    });
     document.addEventListener("keydown", function (e) {
       if (!self.open) return;
       if (e.key === "Escape") self.hide();
@@ -436,44 +456,118 @@
     });
   };
 
+  function colourOf(p, name) {
+    for (var k = 0; k < p.colours.length; k++) if (p.colours[k].name === name) return p.colours[k];
+    return null;
+  }
+  function same(a, b) { return String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase(); }
+
+  /* as variantes da cor escolhida (todas, se o produto não tem cor) */
+  Arara.prototype.variants = function () {
+    var p = this.P[this.current], c = this.colourSel;
+    if (!p.colours.length || !c) return p.variants;
+    return p.variants.filter(function (v) { return v.colour === c; });
+  };
+
+  /* a foto a mostrar: a da cor escolhida, se o bloco tiver; senão a da peça */
+  Arara.prototype.photo = function () {
+    var p = this.P[this.current], c = colourOf(p, this.colourSel);
+    if (c && (c.front || c.back)) return c[this.faceSel] || c.front || c.back;
+    return p.img[this.faceSel] || p.img.rail;
+  };
+  Arara.prototype.hasPhotoOf = function (name) {
+    var p = this.P[this.current], c = colourOf(p, name);
+    return same(name, p.colour) || !!(c && (c.front || c.back));
+  };
+
   Arara.prototype.fill = function (i) {
     var p = this.P[i], v = this.view;
     this.current = i; this.picked = null;
+    /* começa na cor da foto (ou na primeira disponível) */
+    var start = null;
+    p.colours.forEach(function (c) { if (!start && same(c.name, p.colour)) start = c.name; });
+    if (!start) p.colours.forEach(function (c) { if (!start && c.available) start = c.name; });
+    this.colourSel = start || (p.colours[0] && p.colours[0].name) || "";
+    this.faceSel = p.rail;
     this.vimg.alt = p.name;
     this.vimg.style.setProperty("--s", p.scale || 1);
-    this.face(p.rail);
+    this.vimg.src = this.photo();
     v.querySelector("[data-pa3d-count]").textContent = pad(i + 1) + " / " + pad(this.N);
-    v.querySelector("[data-pa3d-kind]").textContent = [p.kind, p.colour].filter(Boolean).join(" · ");
     v.querySelector("[data-pa3d-name]").textContent = p.name;
-    v.querySelector("[data-pa3d-price]").textContent = p.priceLabel || "";
-    var link = v.querySelector("[data-pa3d-link]");
-    link.href = p.url || "#"; link.hidden = !p.url;
-    v.querySelector("[data-pa3d-faces]").hidden = !(p.img.front && p.img.back);
+    this.tags();
     this.status("");
     this.sizes();
   };
 
-  /* frente ou costas */
-  Arara.prototype.face = function (which) {
-    var p = this.P[this.current];
-    this.vimg.src = p.img[which] || p.img.rail;
-    Array.prototype.forEach.call(this.view.querySelectorAll("[data-face]"), function (b) {
-      b.setAttribute("aria-pressed", String(b.getAttribute("data-face") === which));
-    });
+  Arara.prototype.tags = function () {
+    var p = this.P[this.current], sel = this.colourSel, soldOut = this.el.getAttribute("data-sold-out") || "";
+    this.tagList.hidden = p.colours.length < 2;
+    this.tagList.innerHTML = p.colours.map(function (c, k) {
+      var t1 = c.tones[0] || "#c8c8c8", t2 = c.tones[1] || t1;
+      return '<li style="--k:' + k + '"><button type="button" class="pa3d__tag' + (c.available ? "" : " is-out") + '" data-colour="' + c.name.replace(/"/g, "&quot;") +
+        '" aria-pressed="' + (c.name === sel) + '" aria-label="' + c.name.replace(/"/g, "&quot;") + (c.available ? "" : ", " + soldOut) +
+        '" title="' + c.name.replace(/"/g, "&quot;") + '" style="--t1:' + t1 + ";--t2:" + t2 + '"><i></i></button></li>';
+    }).join("");
+  };
+
+  Arara.prototype.pickColour = function (name) {
+    if (name === this.colourSel) return;
+    var before = this.photo();
+    this.colourSel = name; this.picked = null;
+    this.tags();
+    this.sizes();
+    var after = this.photo();
+    if (after !== before) this.swap(after, "dye");
+  };
+
+  /* frente ou costas: a peça gira até ficar de lado, troca a foto e volta */
+  Arara.prototype.flip = function (which) {
+    if (which === this.faceSel) return;
+    this.faceSel = which;
+    this.sizes();
+    this.swap(this.photo(), "flip");
+  };
+
+  Arara.prototype.swap = function (src, how) {
+    var img = this.vimg;
+    if (reduced || !img.animate) { img.src = src; return; }
+    var out = how === "flip" ? [{ transform: "none" }, { transform: "scaleX(.04)" }] : [{ opacity: 1 }, { opacity: 0 }];
+    var inn = how === "flip" ? [{ transform: "scaleX(.04)" }, { transform: "none" }] : [{ opacity: 0 }, { opacity: 1 }];
+    var a = img.animate(out, { duration: how === "flip" ? 160 : 140, easing: "cubic-bezier(.5,0,.75,0)", fill: "forwards" });
+    a.onfinish = function () {
+      img.src = src;
+      var go = function () { a.cancel(); img.animate(inn, { duration: how === "flip" ? 260 : 220, easing: "cubic-bezier(.16,1,.3,1)" }); };
+      if (img.decode) img.decode().then(go, go); else go();
+    };
   };
 
   Arara.prototype.sizes = function () {
-    var p = this.P[this.current], picked = this.picked, soldOut = this.el.getAttribute("data-sold-out") || "";
-    this.sizeGrid.innerHTML = p.sizes.map(function (s, k) {
+    var p = this.P[this.current], picked = this.picked, list = this.variants(), el = this.el, v = this.view;
+    var soldOut = el.getAttribute("data-sold-out") || "";
+    this.sizeGrid.innerHTML = list.map(function (s, k) {
       var out = !s.available;
       return '<button class="pa3d__size" type="button" data-size="' + k + '" aria-pressed="' + (picked === k) + '"' + (out ? " disabled" : "") +
-        ' aria-label="' + s.label + (out ? ", " + soldOut : "") + '"><span>' + s.label + "</span>" + (out ? "<small>" + soldOut + "</small>" : "") + "</button>";
+        ' aria-label="' + s.size + (out ? ", " + soldOut : "") + '">' + s.size + "</button>";
     }).join("");
-    var none = !p.sizes.length || !p.sizes.some(function (s) { return s.available; });
-    this.addBtn.disabled = picked === null || none;
-    this.addBtn.textContent = none ? (this.el.getAttribute("data-unavailable") || "")
-      : picked === null ? (this.el.getAttribute("data-pick") || "")
-      : (this.el.getAttribute("data-add") || "") + " " + p.sizes[picked].label + (p.priceLabel ? " — " + p.priceLabel : "");
+    var any = list.some(function (s) { return s.available; });
+    var chosen = picked !== null ? list[picked] : null;
+    this.addBtn.disabled = !chosen;
+    this.addBtn.textContent = !any ? (el.getAttribute("data-unavailable") || "") : chosen ? (el.getAttribute("data-add") || "") : (el.getAttribute("data-pick") || "");
+    /* preço da variante (ou da cor), cor escolhida e se a foto é de outra cor */
+    var price = (chosen || list[0] || {}).price || p.priceLabel || "";
+    v.querySelector("[data-pa3d-price]").textContent = price;
+    var note = this.colourSel ? " · " + this.colourSel : "";
+    if (this.colourSel && !this.hasPhotoOf(this.colourSel)) note += " (" + (el.getAttribute("data-photo-in") || "") + " " + p.colour + ")";
+    v.querySelector("[data-pa3d-colour]").textContent = note;
+    var link = v.querySelector("[data-pa3d-link]"), target = chosen || list[0];
+    link.href = p.url ? p.url + (target ? (p.url.indexOf("?") < 0 ? "?" : "&") + "variant=" + target.id : "") : "#";
+    link.hidden = !p.url;
+    /* Frente/Costas só quando há as duas fotos (da cor escolhida, se tiver) */
+    var c = colourOf(p, this.colourSel), photos = c && (c.front || c.back) ? c : p.img, faceSel = this.faceSel;
+    v.querySelector("[data-pa3d-faces]").hidden = !(photos.front && photos.back);
+    Array.prototype.forEach.call(v.querySelectorAll("[data-face]"), function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-face") === faceSel));
+    });
   };
 
   Arara.prototype.status = function (html) {
@@ -485,7 +579,7 @@
      usa para atualizar e abrir o carrinho); o link "ver sacola" fica de
      reserva caso o carrinho lateral não abra sozinho. */
   Arara.prototype.add = function () {
-    var self = this, p = this.P[this.current], s = p.sizes[this.picked];
+    var self = this, s = this.picked !== null ? this.variants()[this.picked] : null;
     if (!s) return;
     this.addBtn.disabled = true;
     fetch(root() + "cart/add.js", {
@@ -499,7 +593,7 @@
         var html = document.documentElement;
         html.dispatchEvent(new CustomEvent("variant:add", { bubbles: true, detail: { items: added.items || [added], cart: cart } }));
         html.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true, detail: { cart: cart } }));
-        self.status((self.el.getAttribute("data-added") || "") + ' <a href="' + root() + 'cart">' + (self.el.getAttribute("data-view-cart") || "") + "</a>");
+        self.status((self.el.getAttribute("data-added") || "") + ' <a class="link" href="' + root() + 'cart">' + (self.el.getAttribute("data-view-cart") || "") + "</a>");
         self.sizes();
       });
     }).catch(function (err) {
@@ -520,12 +614,12 @@
     this.byKeyboard = !!byKeyboard;
     this.fill(i);
     this.setActive(i); this.markAway(i);
-    this.lastFocus = document.activeElement;
     document.documentElement.classList.add("pa3d-lock");
     this.view.hidden = false;
     requestAnimationFrame(function () { self.view.classList.add("is-open"); });
-    if (!reduced && this.vimg.animate) this.vimg.animate([{ opacity: 0, transform: "translateY(-24px) rotate(-3deg)" }, { opacity: 1, transform: "none" }], { duration: 600, easing: "cubic-bezier(.16,1,.3,1)" });
-    setTimeout(function () { self.view.querySelector("[data-pa3d-close]").focus({ preventScroll: true }); }, 60);
+    if (!reduced && this.vimg.animate) this.vimg.animate([{ opacity: 0, transform: "translateY(-28px) rotate(-3deg)" }, { opacity: 1, transform: "none" }], { duration: 650, easing: "cubic-bezier(.16,1,.3,1)" });
+    /* o foco vai para o "Fechar" (teclado e leitor de tela), mas só mostra o contorno se veio do teclado */
+    setTimeout(function () { self.view.querySelector("[data-pa3d-close]").focus({ preventScroll: true, focusVisible: self.byKeyboard }); }, 60);
   };
 
   Arara.prototype.hide = function () {
@@ -543,10 +637,17 @@
     this.kick();
   };
 
+  /* setas: a peça vizinha da arara entra pelo lado de onde está */
   Arara.prototype.stepTo = function (dir) {
-    var i = (this.current + dir + this.N) % this.N;
-    this.fill(i); this.setActive(i); this.markAway(i);
-    if (!reduced && this.vimg.animate) this.vimg.animate([{ opacity: 0, transform: "translateX(" + dir * 50 + "px) rotate(" + dir * 2.5 + "deg)" }, { opacity: 1, transform: "none" }], { duration: 480, easing: "cubic-bezier(.16,1,.3,1)" });
+    var self = this, i = (this.current + dir + this.N) % this.N, img = this.vimg;
+    this.setActive(i); this.markAway(i);
+    if (reduced || !img.animate) { this.fill(i); return; }
+    var out = img.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateX(" + (-dir * 60) + "px) rotate(" + (-dir * 3) + "deg)" }], { duration: 160, easing: "ease-in", fill: "forwards" });
+    out.onfinish = function () {
+      self.fill(i);
+      var go = function () { out.cancel(); img.animate([{ opacity: 0, transform: "translateX(" + (dir * 60) + "px) rotate(" + (dir * 3) + "deg)" }, { opacity: 1, transform: "none" }], { duration: 520, easing: "cubic-bezier(.16,1,.3,1)" }); };
+      if (img.decode) img.decode().then(go, go); else go();
+    };
   };
 
   /* ---------------- Início ---------------- */

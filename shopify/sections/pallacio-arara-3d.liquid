@@ -28,7 +28,8 @@
   class="pa3d"
   data-pa3d
   data-pick="Escolha um tamanho"
-  data-add="Adicionar"
+  data-add="Adicionar ao carrinho"
+  data-photo-in="foto em"
   data-unavailable="Esgotado"
   data-sold-out="Esgotado"
   data-added="Adicionado à sacola."
@@ -56,29 +57,39 @@
   {%- endif -%}
   <p class="pa3d__sr" data-pa3d-live aria-live="polite"></p>
 
+  {%- comment -%}
+    Peça aberta (pop-up): a arara fica desfocada atrás, a peça pendurada no centro, setas para as
+    vizinhas da arara, etiquetas de cor penduradas ao lado. Botões, títulos e textos usam as classes
+    do tema (button, h3, text-subdued), então seguem o resto da loja.
+  {%- endcomment -%}
   <section class="pa3d__view" data-pa3d-view role="dialog" aria-modal="true" aria-labelledby="pa3d-name-{{ sid }}" hidden>
-    <div class="pa3d__stage" data-pa3d-stage>
-      <img class="pa3d__vimg" data-pa3d-vimg alt="" draggable="false">
-      <div class="pa3d__nav">
-        <button type="button" data-pa3d-prev aria-label="Peça anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
-        <span class="pa3d__caps pa3d__count" data-pa3d-count></span>
-        <button type="button" data-pa3d-next aria-label="Próxima peça"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    <div class="pa3d__scrim" data-pa3d-stage></div>
+    <button class="pa3d__close text-sm" type="button" data-pa3d-close>Fechar <span aria-hidden="true">✕</span></button>
+
+    <button class="pa3d__arrow pa3d__arrow--prev" type="button" data-pa3d-prev aria-label="Peça anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+    <button class="pa3d__arrow pa3d__arrow--next" type="button" data-pa3d-next aria-label="Próxima peça"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+
+    <div class="pa3d__piece">
+      <div class="pa3d__hanging" data-pa3d-hanging>
+        <img class="pa3d__vimg" data-pa3d-vimg alt="" draggable="false">
+        <ul class="pa3d__tags" data-pa3d-colours role="list" aria-label="Cores disponíveis"></ul>
       </div>
     </div>
-    <div class="pa3d__panel">
-      <button class="pa3d__caps pa3d__close" type="button" data-pa3d-close>Fechar ✕</button>
-      <p class="pa3d__caps" data-pa3d-kind></p>
-      <h2 class="pa3d__name h2" id="pa3d-name-{{ sid }}" data-pa3d-name></h2>
-      <p class="pa3d__price" data-pa3d-price></p>
+
+    <div class="pa3d__info">
+      <p class="pa3d__count text-xs text-subdued" data-pa3d-count></p>
+      <h2 class="pa3d__name h3" id="pa3d-name-{{ sid }}" data-pa3d-name></h2>
+      <p class="pa3d__meta text-sm text-subdued"><span data-pa3d-price></span><span data-pa3d-colour></span></p>
       <div class="pa3d__faces" data-pa3d-faces role="group" aria-label="Vista">
-        <button class="pa3d__caps" type="button" data-face="front" aria-pressed="false">Frente</button>
-        <button class="pa3d__caps" type="button" data-face="back" aria-pressed="false">Costas</button>
+        <button type="button" data-face="front" aria-pressed="false">Frente</button>
+        <button type="button" data-face="back" aria-pressed="false">Costas</button>
       </div>
-      <div class="pa3d__sizes-head"><span class="pa3d__caps">Tamanho</span></div>
-      <div class="pa3d__sizes" data-pa3d-sizes></div>
-      <button class="pa3d__btn" type="button" data-pa3d-add disabled>Escolha um tamanho</button>
-      <p class="pa3d__status" data-pa3d-status aria-live="polite" hidden></p>
-      <a class="pa3d__link" data-pa3d-link href="#">Ver todos os detalhes →</a>
+      <div class="pa3d__sizes" data-pa3d-sizes role="group" aria-label="Tamanho"></div>
+      <div class="pa3d__actions">
+        <button class="button" type="button" data-pa3d-add disabled>Escolha um tamanho</button>
+        <a class="button button--outline" data-pa3d-link href="#">Ver produto</a>
+      </div>
+      <p class="pa3d__status text-sm" data-pa3d-status aria-live="polite" hidden></p>
     </div>
   </section>
 
@@ -116,14 +127,16 @@
 
           assign name = block.settings.name | default: p.title
           assign colour = block.settings.colour | strip
-          assign cor = colour | downcase
 
           assign size_pos = 0
+          assign colour_pos = -1
           if p != blank
             for opt in p.options_with_values
               assign on = opt.name | downcase
               if on == 'tamanho' or on == 'size'
                 assign size_pos = forloop.index0
+              elsif on == 'cor' or on == 'color' or on == 'colour'
+                assign colour_pos = forloop.index0
               endif
             endfor
           endif
@@ -146,37 +159,95 @@
               "front": {% if img_front != blank %}{{ img_front | json }}{% else %}null{% endif %},
               "back": {% if img_back != blank %}{{ img_back | json }}{% else %}null{% endif %}
             },
-            {%- assign price_variant = nil -%}
-            "sizes": [
-              {%- assign first_size = true -%}
+            "variants": [
               {%- for v in p.variants -%}
                 {%- liquid
-                  assign match = true
-                  if cor != blank and p.options.size > 1
-                    assign match = false
-                    for val in v.options
-                      assign d = val | downcase
-                      if d == cor
-                        assign match = true
-                      endif
-                    endfor
+                  assign vc = ''
+                  if colour_pos >= 0
+                    assign vc = v.options[colour_pos]
                   endif
                 -%}
-                {%- if match -%}
-                  {%- if price_variant == nil -%}{%- assign price_variant = v -%}{%- endif -%}
-                  {%- unless first_size -%},{%- endunless -%}
-                  {%- assign first_size = false -%}
-                  { "id": {{ v.id | json }}, "label": {{ v.options[size_pos] | json }}, "available": {{ v.available | json }} }
-                {%- endif -%}
+                { "id": {{ v.id | json }}, "size": {{ v.options[size_pos] | json }}, "colour": {{ vc | json }}, "available": {{ v.available | json }}, "price": {{ v.price | money | strip_html | json }} }
+                {%- unless forloop.last -%},{%- endunless -%}
               {%- endfor -%}
             ],
-            {%- if price_variant != nil -%}
-              "priceLabel": {{ price_variant.price | money | strip_html | json }}
-            {%- elsif p != blank -%}
-              "priceLabel": {{ p.price | money | strip_html | json }}
-            {%- else -%}
-              "priceLabel": ""
-            {%- endif -%}
+            {%- comment -%}
+              Cores da opção "Cor". O tom da etiqueta sai do nome (Preta, Off White, Azul Marinho...);
+              "Off White / Logo Azul" vira etiqueta off-white com faixa azul. Fotos de outras cores
+              entram pelos campos "Outra cor" do bloco.
+            {%- endcomment -%}
+            "colours": [
+              {%- if colour_pos >= 0 -%}
+                {%- assign colour_values = p.options_with_values[colour_pos].values -%}
+                {%- for cv in colour_values -%}
+                  {%- liquid
+                    assign tones = ''
+                    assign parts = cv | downcase | split: '/'
+                    for part in parts
+                      assign tone = '#c8c8c8'
+                      if part contains 'off'
+                        assign tone = '#efe9dc'
+                      elsif part contains 'branc'
+                        assign tone = '#ffffff'
+                      elsif part contains 'pret'
+                        assign tone = '#141414'
+                      elsif part contains 'marinho'
+                        assign tone = '#1d2a48'
+                      elsif part contains 'azul'
+                        assign tone = '#1f5faf'
+                      elsif part contains 'verde'
+                        assign tone = '#2f5442'
+                      elsif part contains 'rox'
+                        assign tone = '#5b3f8c'
+                      elsif part contains 'dourad'
+                        assign tone = '#c9a24a'
+                      elsif part contains 'cinza'
+                        assign tone = '#8d9096'
+                      elsif part contains 'bege'
+                        assign tone = '#d9c7a6'
+                      endif
+                      assign tones = tones | append: tone | append: ','
+                    endfor
+                    assign tones = tones | split: ','
+
+                    assign cv_available = false
+                    for v in p.variants
+                      if v.options[colour_pos] == cv and v.available
+                        assign cv_available = true
+                        break
+                      endif
+                    endfor
+
+                    assign cw_front = ''
+                    assign cw_back = ''
+                    assign cvd = cv | downcase | strip
+                    for n in (1..3)
+                      assign kl = 'cw' | append: n | append: '_label'
+                      assign kf = 'cw' | append: n | append: '_front'
+                      assign kb = 'cw' | append: n | append: '_back'
+                      assign lab = block.settings[kl] | downcase | strip
+                      if lab != blank and lab == cvd
+                        if block.settings[kf] != blank
+                          assign cw_front = block.settings[kf] | image_url: width: 1200
+                        endif
+                        if block.settings[kb] != blank
+                          assign cw_back = block.settings[kb] | image_url: width: 1200
+                        endif
+                      endif
+                    endfor
+                  -%}
+                  {
+                    "name": {{ cv | json }},
+                    "tones": {{ tones | json }},
+                    "available": {{ cv_available | json }},
+                    "front": {% if cw_front != blank %}{{ cw_front | json }}{% else %}null{% endif %},
+                    "back": {% if cw_back != blank %}{{ cw_back | json }}{% else %}null{% endif %}
+                  }
+                  {%- unless forloop.last -%},{%- endunless -%}
+                {%- endfor -%}
+              {%- endif -%}
+            ],
+            "priceLabel": {% if p != blank %}{{ p.price | money | strip_html | json }}{% else %}""{% endif %}
           }
         {%- endif -%}
       {%- endfor -%}
@@ -223,7 +294,17 @@
         { "type": "select", "id": "rail_face", "label": "Vista ao girar na arara", "options": [ { "value": "back", "label": "Costas (estampa)" }, { "value": "front", "label": "Frente" } ], "default": "back" },
         { "type": "header", "content": "Ajustes" },
         { "type": "range", "id": "scale", "label": "Escala da peça", "info": "Para fotos tiradas mais de perto (os shorts usam 68%).", "min": 50, "max": 100, "step": 1, "unit": "%", "default": 100 },
-        { "type": "select", "id": "turn", "label": "Sentido do giro", "options": [ { "value": "1", "label": "Normal" }, { "value": "-1", "label": "Invertido" } ], "default": "1" }
+        { "type": "select", "id": "turn", "label": "Sentido do giro", "options": [ { "value": "1", "label": "Normal" }, { "value": "-1", "label": "Invertido" } ], "default": "1" },
+        { "type": "header", "content": "Outras cores (opcional)", "info": "Fotos da mesma peça em outra cor, para aparecerem ao escolher a etiqueta. O nome tem que ser igual à opção de cor do produto." },
+        { "type": "text", "id": "cw1_label", "label": "Outra cor 1: nome" },
+        { "type": "image_picker", "id": "cw1_front", "label": "Outra cor 1: frente" },
+        { "type": "image_picker", "id": "cw1_back", "label": "Outra cor 1: costas" },
+        { "type": "text", "id": "cw2_label", "label": "Outra cor 2: nome" },
+        { "type": "image_picker", "id": "cw2_front", "label": "Outra cor 2: frente" },
+        { "type": "image_picker", "id": "cw2_back", "label": "Outra cor 2: costas" },
+        { "type": "text", "id": "cw3_label", "label": "Outra cor 3: nome" },
+        { "type": "image_picker", "id": "cw3_front", "label": "Outra cor 3: frente" },
+        { "type": "image_picker", "id": "cw3_back", "label": "Outra cor 3: costas" }
       ]
     }
   ],
