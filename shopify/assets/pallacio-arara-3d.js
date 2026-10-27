@@ -13,10 +13,10 @@
 
    Desktop: passar o mouse vira a peça, clicar abre. Celular: deslizar o dedo
    pela arara vira as peças, tocar abre. A peça aberta mostra frente/costas,
-   tamanhos da cor da foto e adiciona ao carrinho da loja.
+   as cores do produto e leva para a página do produto.
 
    Versão para o tema do js/rail.js do repositório TEMAAA: várias arara por
-   página, dados vindos do Liquid, carrinho de verdade. */
+   página e dados vindos do Liquid. */
 (function () {
   "use strict";
 
@@ -25,8 +25,6 @@
   var finePointer = matchMedia("(hover: hover) and (pointer: fine)");
   var small = matchMedia("(max-width: 760px)");
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
-  function pad(n) { return (n < 10 ? "0" : "") + n; }
-  function root() { return (window.Shopify && Shopify.routes && Shopify.routes.root) || "/"; }
 
   function loaded(im) {
     if (im.complete && im.naturalWidth) return Promise.resolve();
@@ -419,20 +417,11 @@
     this.view.style.color = cs.color;
     var q = function (s) { return self.view.querySelector(s); };
     this.vimg = q("[data-pa3d-vimg]");
-    this.sizeGrid = q("[data-pa3d-sizes]");
-    this.addBtn = q("[data-pa3d-add]");
     this.tagList = q("[data-pa3d-colours]");
-    this.sizeGrid.addEventListener("click", function (e) {
-      var b = e.target.closest(".pa3d__size");
-      if (!b || b.disabled) return;
-      self.picked = Number(b.getAttribute("data-size"));
-      self.sizes();
-    });
     this.tagList.addEventListener("click", function (e) {
       var b = e.target.closest("[data-colour]");
       if (b) self.pickColour(b.getAttribute("data-colour"));
     });
-    this.addBtn.addEventListener("click", function () { self.add(); });
     Array.prototype.forEach.call(this.view.querySelectorAll("[data-face]"), function (b) {
       b.addEventListener("click", function () { self.flip(b.getAttribute("data-face")); });
     });
@@ -475,14 +464,10 @@
     if (c && (c.front || c.back)) return c[this.faceSel] || c.front || c.back;
     return p.img[this.faceSel] || p.img.rail;
   };
-  Arara.prototype.hasPhotoOf = function (name) {
-    var p = this.P[this.current], c = colourOf(p, name);
-    return same(name, p.colour) || !!(c && (c.front || c.back));
-  };
 
   Arara.prototype.fill = function (i) {
     var p = this.P[i], v = this.view;
-    this.current = i; this.picked = null;
+    this.current = i;
     /* começa na cor da foto (ou na primeira disponível) */
     var start = null;
     p.colours.forEach(function (c) { if (!start && same(c.name, p.colour)) start = c.name; });
@@ -492,11 +477,9 @@
     this.vimg.alt = p.name;
     this.vimg.style.setProperty("--s", p.scale || 1);
     this.vimg.src = this.photo();
-    v.querySelector("[data-pa3d-count]").textContent = pad(i + 1) + " / " + pad(this.N);
     v.querySelector("[data-pa3d-name]").textContent = p.name;
     this.tags();
-    this.status("");
-    this.sizes();
+    this.refresh();
   };
 
   Arara.prototype.tags = function () {
@@ -513,9 +496,9 @@
   Arara.prototype.pickColour = function (name) {
     if (name === this.colourSel) return;
     var before = this.photo();
-    this.colourSel = name; this.picked = null;
+    this.colourSel = name;
     this.tags();
-    this.sizes();
+    this.refresh();
     var after = this.photo();
     if (after !== before) this.swap(after, "dye");
   };
@@ -524,7 +507,7 @@
   Arara.prototype.flip = function (which) {
     if (which === this.faceSel) return;
     this.faceSel = which;
-    this.sizes();
+    this.refresh();
     this.swap(this.photo(), "flip");
   };
 
@@ -541,64 +524,17 @@
     };
   };
 
-  Arara.prototype.sizes = function () {
-    var p = this.P[this.current], picked = this.picked, list = this.variants(), el = this.el, v = this.view;
-    var soldOut = el.getAttribute("data-sold-out") || "";
-    this.sizeGrid.innerHTML = list.map(function (s, k) {
-      var out = !s.available;
-      return '<button class="pa3d__size" type="button" data-size="' + k + '" aria-pressed="' + (picked === k) + '"' + (out ? " disabled" : "") +
-        ' aria-label="' + s.size + (out ? ", " + soldOut : "") + '">' + s.size + "</button>";
-    }).join("");
-    var any = list.some(function (s) { return s.available; });
-    var chosen = picked !== null ? list[picked] : null;
-    this.addBtn.disabled = !chosen;
-    this.addBtn.textContent = !any ? (el.getAttribute("data-unavailable") || "") : chosen ? (el.getAttribute("data-add") || "") : (el.getAttribute("data-pick") || "");
-    /* preço da variante (ou da cor), cor escolhida e se a foto é de outra cor */
-    var price = (chosen || list[0] || {}).price || p.priceLabel || "";
-    v.querySelector("[data-pa3d-price]").textContent = price;
-    var note = this.colourSel ? " · " + this.colourSel : "";
-    if (this.colourSel && !this.hasPhotoOf(this.colourSel)) note += " (" + (el.getAttribute("data-photo-in") || "") + " " + p.colour + ")";
-    v.querySelector("[data-pa3d-colour]").textContent = note;
-    var link = v.querySelector("[data-pa3d-link]"), target = chosen || list[0];
-    link.href = p.url ? p.url + (target ? (p.url.indexOf("?") < 0 ? "?" : "&") + "variant=" + target.id : "") : "#";
+  /* link para a página do produto, já na cor escolhida; Frente/Costas só com as duas fotos */
+  Arara.prototype.refresh = function () {
+    var p = this.P[this.current], v = this.view, list = this.variants(), faceSel = this.faceSel;
+    var target = list.filter(function (x) { return x.available; })[0] || list[0];
+    var link = v.querySelector("[data-pa3d-link]");
+    link.href = p.url ? p.url + (target && p.colours.length ? (p.url.indexOf("?") < 0 ? "?" : "&") + "variant=" + target.id : "") : "#";
     link.hidden = !p.url;
-    /* Frente/Costas só quando há as duas fotos (da cor escolhida, se tiver) */
-    var c = colourOf(p, this.colourSel), photos = c && (c.front || c.back) ? c : p.img, faceSel = this.faceSel;
+    var c = colourOf(p, this.colourSel), photos = c && (c.front || c.back) ? c : p.img;
     v.querySelector("[data-pa3d-faces]").hidden = !(photos.front && photos.back);
     Array.prototype.forEach.call(v.querySelectorAll("[data-face]"), function (b) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-face") === faceSel));
-    });
-  };
-
-  Arara.prototype.status = function (html) {
-    var s = this.view.querySelector("[data-pa3d-status]");
-    s.innerHTML = html; s.hidden = !html;
-  };
-
-  /* Adiciona ao carrinho da loja. Depois avisa o tema (eventos que o Impact
-     usa para atualizar e abrir o carrinho); o link "ver sacola" fica de
-     reserva caso o carrinho lateral não abra sozinho. */
-  Arara.prototype.add = function () {
-    var self = this, s = this.picked !== null ? this.variants()[this.picked] : null;
-    if (!s) return;
-    this.addBtn.disabled = true;
-    fetch(root() + "cart/add.js", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" },
-      body: JSON.stringify({ items: [{ id: s.id, quantity: 1 }] })
-    }).then(function (r) {
-      return r.json().then(function (d) { if (!r.ok) throw new Error(d.description || d.message || ""); return d; });
-    }).then(function (added) {
-      return fetch(root() + "cart.js").then(function (r) { return r.json(); }).then(function (cart) {
-        var html = document.documentElement;
-        html.dispatchEvent(new CustomEvent("variant:add", { bubbles: true, detail: { items: added.items || [added], cart: cart } }));
-        html.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true, detail: { cart: cart } }));
-        self.status((self.el.getAttribute("data-added") || "") + ' <a class="link" href="' + root() + 'cart">' + (self.el.getAttribute("data-view-cart") || "") + "</a>");
-        self.sizes();
-      });
-    }).catch(function (err) {
-      self.status(err && err.message ? err.message : (self.el.getAttribute("data-error") || ""));
-      self.sizes();
     });
   };
 

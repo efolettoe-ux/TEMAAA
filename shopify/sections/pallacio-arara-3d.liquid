@@ -3,7 +3,7 @@
   Peças penduradas de lado num cano cromado. Desktop: passar o mouse vira a peça de frente
   (giro 3D com torção, pêndulo, vizinhas abrem espaço); arrastar balança; clicar abre.
   Celular: deslizar o dedo pela arara vira as peças; tocar abre.
-  A peça aberta mostra frente/costas, os tamanhos da cor da foto e adiciona ao carrinho.
+  A peça aberta mostra frente/costas, as cores do produto e um botão para a página do produto.
 
   Fotos: PNG/WebP sem fundo, com cabide, todas no mesmo enquadramento (gancho no centro do topo,
   mesma escala). As fotos de perfil têm o gancho redesenhado de lado. Gere com
@@ -27,14 +27,7 @@
   id="pa3d-{{ sid }}"
   class="pa3d"
   data-pa3d
-  data-pick="Escolha um tamanho"
-  data-add="Adicionar ao carrinho"
-  data-photo-in="foto em"
-  data-unavailable="Esgotado"
   data-sold-out="Esgotado"
-  data-added="Adicionado à sacola."
-  data-view-cart="Ver sacola"
-  data-error="Não deu para adicionar. Tente de novo."
 >
   {%- if section.settings.label_left != blank or section.settings.label_right != blank -%}
     <div class="pa3d__head">
@@ -77,19 +70,12 @@
     </div>
 
     <div class="pa3d__info">
-      <p class="pa3d__count text-xs text-subdued" data-pa3d-count></p>
       <h2 class="pa3d__name h3" id="pa3d-name-{{ sid }}" data-pa3d-name></h2>
-      <p class="pa3d__meta text-sm text-subdued"><span data-pa3d-price></span><span data-pa3d-colour></span></p>
       <div class="pa3d__faces" data-pa3d-faces role="group" aria-label="Vista">
         <button type="button" data-face="front" aria-pressed="false">Frente</button>
         <button type="button" data-face="back" aria-pressed="false">Costas</button>
       </div>
-      <div class="pa3d__sizes" data-pa3d-sizes role="group" aria-label="Tamanho"></div>
-      <div class="pa3d__actions">
-        <button class="button" type="button" data-pa3d-add disabled>Escolha um tamanho</button>
-        <a class="button button--outline" data-pa3d-link href="#">Ver produto</a>
-      </div>
-      <p class="pa3d__status text-sm" data-pa3d-status aria-live="polite" hidden></p>
+      <a class="button" data-pa3d-link href="#">Ver produto</a>
     </div>
   </section>
 

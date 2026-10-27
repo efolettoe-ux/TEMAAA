@@ -80,10 +80,10 @@
    Fundo: a página desfocada (a arara fica visível atrás). Fontes, botões e
    textos secundários vêm do tema (h3, button, text-subdued). */
 html.pa3d-lock { overflow: hidden; }
-.pa3d__view { position: fixed; inset: 0; z-index: 9999; display: grid; grid-template-rows: 1fr auto; justify-items: center;
+.pa3d__view { position: fixed; inset: 0; z-index: 9999; display: grid; grid-template-rows: auto auto; align-content: center; row-gap: 22px; justify-items: center;
   padding: 0 16px max(20px, env(safe-area-inset-bottom)); color: inherit; }
 .pa3d__view[hidden] { display: none; }
-.pa3d__scrim { position: absolute; inset: 0; background: color-mix(in srgb, var(--pa3d-bg, #fff) 72%, transparent);
+.pa3d__scrim { position: absolute; inset: 0; background: color-mix(in srgb, var(--pa3d-bg, #fff) 88%, transparent);
   backdrop-filter: blur(16px) saturate(1.05); -webkit-backdrop-filter: blur(16px) saturate(1.05); opacity: 0; transition: opacity .45s var(--pa3d-ease); }
 .pa3d__view.is-open .pa3d__scrim { opacity: 1; }
 .pa3d__view > :not(.pa3d__scrim) { position: relative; opacity: 0; transition: opacity .35s ease .08s; }
@@ -102,7 +102,7 @@ html.pa3d-lock { overflow: hidden; }
 .pa3d__arrow--next { right: max(16px, calc(50% - min(40vw, 480px))); }
 
 /* a peça pendurada, centrada; as etiquetas de cor penduram ao lado do ombro */
-.pa3d__piece { align-self: stretch; display: flex; justify-content: center; width: 100%; padding-top: max(6vh, 44px); touch-action: pan-y; }
+.pa3d__piece { display: flex; justify-content: center; width: 100%; padding-top: 24px; touch-action: pan-y; }
 .pa3d__hanging { position: relative; height: max-content; }
 .pa3d__vimg { display: block; height: calc(min(60vh, 640px) * var(--s, 1)); width: auto; max-width: none; transform-origin: 50% 0;
   filter: drop-shadow(0 24px 22px #14161e26); user-select: none; -webkit-user-drag: none; }
@@ -122,26 +122,15 @@ html.pa3d-lock { overflow: hidden; }
 .pa3d__tag.is-out i::after { content: ""; position: absolute; left: -3px; right: -3px; top: 50%; height: 1px; background: currentColor; transform: rotate(-60deg); }
 @keyframes pa3d-sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
 
-/* nome, preço, frente/costas, tamanhos e botões, centralizados como nos vídeos */
+/* nome, frente/costas e o botão, centralizados como nos vídeos */
 .pa3d__info { display: grid; justify-items: center; gap: 10px; width: min(560px, 100%); text-align: center; }
-.pa3d__count { margin: 0; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
 .pa3d__name { margin: 0; }
-.pa3d__meta { margin: -4px 0 0; }
 .pa3d__faces { display: inline-flex; padding: 3px; border: 1px solid currentColor; border-radius: 999px; }
 .pa3d__faces[hidden] { display: none; }
 .pa3d__faces button { min-width: 74px; height: 28px; padding: 0 14px; border: 0; border-radius: 999px; background: none; color: inherit; font: inherit;
   font-size: 11px; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background .2s, color .2s; }
 .pa3d__faces button[aria-pressed="true"] { background: var(--pa3d-fg, #0b0b0b); color: var(--pa3d-bg, #fff); }
-.pa3d__sizes { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-.pa3d__size { min-width: 46px; height: 38px; padding: 0 10px; border: 1px solid color-mix(in srgb, currentColor 25%, transparent); border-radius: var(--rounded-button, 0);
   background: none; color: inherit; font: inherit; font-size: 13px; cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
-.pa3d__size:hover { border-color: currentColor; }
-.pa3d__size[aria-pressed="true"] { background: var(--pa3d-fg, #0b0b0b); border-color: var(--pa3d-fg, #0b0b0b); color: var(--pa3d-bg, #fff); }
-.pa3d__size:disabled { opacity: .4; text-decoration: line-through; cursor: default; }
-.pa3d__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 4px; }
-.pa3d__actions [hidden] { display: none; }
-.pa3d__status { margin: 0; }
-.pa3d__status[hidden] { display: none; }
 
 /* ---------------- Celular ---------------- */
 @media (max-width: 760px) {
@@ -154,7 +143,7 @@ html.pa3d-lock { overflow: hidden; }
 }
 
 @media (max-width: 760px) {
-  .pa3d__piece { padding-top: max(10vh, 56px); }
+  .pa3d__piece { padding-top: 40px; }
   .pa3d__vimg { height: calc(min(46svh, 440px) * var(--s, 1)); }
   .pa3d__arrow { top: 30%; width: 40px; height: 40px; }
   .pa3d__tags { top: auto; bottom: -26px; left: 50%; translate: -50%; gap: 12px; }
