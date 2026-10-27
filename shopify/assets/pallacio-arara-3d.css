@@ -130,7 +130,6 @@ html.pa3d-lock { overflow: hidden; }
 .pa3d__faces button { min-width: 74px; height: 28px; padding: 0 14px; border: 0; border-radius: 999px; background: none; color: inherit; font: inherit;
   font-size: 11px; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: background .2s, color .2s; }
 .pa3d__faces button[aria-pressed="true"] { background: var(--pa3d-fg, #0b0b0b); color: var(--pa3d-bg, #fff); }
-  background: none; color: inherit; font: inherit; font-size: 13px; cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
 
 /* ---------------- Celular ---------------- */
 @media (max-width: 760px) {
