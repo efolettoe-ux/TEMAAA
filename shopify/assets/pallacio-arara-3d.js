@@ -418,6 +418,9 @@
     var q = function (s) { return self.view.querySelector(s); };
     this.vimg = q("[data-pa3d-vimg]");
     this.tagList = q("[data-pa3d-colours]");
+    this.colourWrap = q("[data-pa3d-colour-wrap]");
+    this.colourName = q("[data-pa3d-colour-name]");
+    this.chip = q("[data-pa3d-chip]");
     this.tagList.addEventListener("click", function (e) {
       var b = e.target.closest("[data-colour]");
       if (b) self.pickColour(b.getAttribute("data-colour"));
@@ -482,15 +485,28 @@
     this.refresh();
   };
 
+  /* cor escura: o contorno interno do quadrado selecionado fica mais grosso, como na página do produto */
+  function dark(hex) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "").trim());
+    if (!m) return false;
+    var n = parseInt(m[1], 16);
+    return (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) < 110;
+  }
+
+  /* quadrados de cor iguais aos da página do produto (.pallacio-color-block) */
   Arara.prototype.tags = function () {
     var p = this.P[this.current], sel = this.colourSel, soldOut = this.el.getAttribute("data-sold-out") || "";
-    this.tagList.hidden = p.colours.length < 2;
-    this.tagList.innerHTML = p.colours.map(function (c, k) {
+    var esc = function (s) { return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); };
+    this.colourWrap.hidden = p.colours.length < 2;
+    this.tagList.innerHTML = p.colours.map(function (c) {
       var t1 = c.tones[0] || "#c8c8c8", t2 = c.tones[1] || t1;
-      return '<li style="--k:' + k + '"><button type="button" class="pa3d__tag' + (c.available ? "" : " is-out") + '" data-colour="' + c.name.replace(/"/g, "&quot;") +
-        '" aria-pressed="' + (c.name === sel) + '" aria-label="' + c.name.replace(/"/g, "&quot;") + (c.available ? "" : ", " + soldOut) +
-        '" title="' + c.name.replace(/"/g, "&quot;") + '" style="--t1:' + t1 + ";--t2:" + t2 + '"><i></i></button></li>';
+      return '<button type="button" class="pa3d__swatch' + (c.available ? "" : " is-out") + (dark(t1) ? " is-dark" : "") +
+        '" data-colour="' + esc(c.name) + '" aria-pressed="' + (c.name === sel) + '" aria-label="' + esc(c.name) + (c.available ? "" : ", " + esc(soldOut)) +
+        '" title="' + esc(c.name) + '" style="--t1:' + t1 + ";--t2:" + t2 + '"></button>';
     }).join("");
+    var c = colourOf(p, sel);
+    this.colourName.textContent = c ? c.name : "";
+    if (c) { this.chip.style.setProperty("--t1", c.tones[0] || "#c8c8c8"); this.chip.style.setProperty("--t2", c.tones[1] || c.tones[0] || "#c8c8c8"); }
   };
 
   Arara.prototype.pickColour = function (name) {

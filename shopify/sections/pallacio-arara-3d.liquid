@@ -65,17 +65,24 @@
     <div class="pa3d__piece">
       <div class="pa3d__hanging" data-pa3d-hanging>
         <img class="pa3d__vimg" data-pa3d-vimg alt="" draggable="false">
-        <ul class="pa3d__tags" data-pa3d-colours role="list" aria-label="Cores disponíveis"></ul>
       </div>
     </div>
 
+    {%- comment -%}
+      Mesmos elementos da página de produto: título (product-info__title), seletor de cor em
+      quadradinhos com "Cor: nome", opções em bloco e o botão preto arredondado.
+    {%- endcomment -%}
     <div class="pa3d__info">
-      <h2 class="pa3d__name h3" id="pa3d-name-{{ sid }}" data-pa3d-name></h2>
-      <div class="pa3d__faces" data-pa3d-faces role="group" aria-label="Vista">
-        <button type="button" data-face="front" aria-pressed="false">Frente</button>
-        <button type="button" data-face="back" aria-pressed="false">Costas</button>
+      <h2 class="pa3d__name product-info__title h6" id="pa3d-name-{{ sid }}" data-pa3d-name></h2>
+      <div class="pa3d__opt" data-pa3d-colour-wrap>
+        <div class="pa3d__opt-info"><span class="text-subdued">Cor:</span><i class="pa3d__chip" data-pa3d-chip aria-hidden="true"></i><span data-pa3d-colour-name></span></div>
+        <div class="pa3d__colours" data-pa3d-colours role="group" aria-label="Cor"></div>
       </div>
-      <a class="button" data-pa3d-link href="#">Ver produto</a>
+      <div class="pa3d__faces" data-pa3d-faces role="group" aria-label="Vista">
+        <button class="pa3d__block" type="button" data-face="front" aria-pressed="false">Frente</button>
+        <button class="pa3d__block" type="button" data-face="back" aria-pressed="false">Costas</button>
+      </div>
+      <a class="button pa3d__cta" data-pa3d-link href="#">Ver produto</a>
     </div>
   </section>
 
@@ -158,8 +165,8 @@
               {%- endfor -%}
             ],
             {%- comment -%}
-              Cores da opção "Cor". O tom da etiqueta sai do nome (Preta, Off White, Azul Marinho...);
-              "Off White / Logo Azul" vira etiqueta off-white com faixa azul. Fotos de outras cores
+              Cores da opção "Cor", com a mesma paleta da página de produto (Preta, Off White, Azul Marinho...);
+              "Off White / Logo Azul" vira quadradinho off-white com canto azul. Fotos de outras cores
               entram pelos campos "Outra cor" do bloco.
             {%- endcomment -%}
             "colours": [
@@ -172,15 +179,17 @@
                     for part in parts
                       assign tone = '#c8c8c8'
                       if part contains 'off'
-                        assign tone = '#efe9dc'
+                        assign tone = '#f4f1e8'
                       elsif part contains 'branc'
                         assign tone = '#ffffff'
                       elsif part contains 'pret'
-                        assign tone = '#141414'
+                        assign tone = '#000000'
                       elsif part contains 'marinho'
-                        assign tone = '#1d2a48'
+                        assign tone = '#29466d'
+                      elsif part contains 'azul claro'
+                        assign tone = '#9db9d1'
                       elsif part contains 'azul'
-                        assign tone = '#1f5faf'
+                        assign tone = '#315d8f'
                       elsif part contains 'verde'
                         assign tone = '#2f5442'
                       elsif part contains 'rox'
@@ -190,7 +199,7 @@
                       elsif part contains 'cinza'
                         assign tone = '#8d9096'
                       elsif part contains 'bege'
-                        assign tone = '#d9c7a6'
+                        assign tone = '#d5c6ad'
                       endif
                       assign tones = tones | append: tone | append: ','
                     endfor
