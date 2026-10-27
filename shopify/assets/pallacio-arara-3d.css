@@ -103,12 +103,14 @@ html.pa3d-lock { overflow: hidden; }
 
 /* a peça pendurada, centrada */
 .pa3d__piece { display: flex; justify-content: center; width: 100%; padding-top: 24px; touch-action: pan-y; }
-.pa3d__hanging { position: relative; height: max-content; transform-origin: 50% 0; }
+.pa3d__hanging { position: relative; height: max-content; }
 .pa3d__vimg { display: block; height: calc(min(56vh, 600px) * var(--s, 1)); width: auto; max-width: none; transform-origin: 50% 0;
   filter: drop-shadow(0 24px 22px #14161e26); user-select: none; -webkit-user-drag: none; }
 
-/* frente/costas e troca de cor: a foto nova esmaece por cima da antiga, no mesmo lugar */
-.pa3d__vimg--next { position: absolute; top: 0; left: 50%; translate: -50% 0; opacity: 0; pointer-events: none; }
+/* o giro de frente/costas é desenhado em WebGL por cima da foto, no mesmo lugar */
+.pa3d__turn { position: absolute; left: 0; top: -6px; z-index: 2; pointer-events: none; }
+.pa3d__turn[hidden] { display: none; }
+.pa3d__turn canvas { position: absolute; filter: drop-shadow(0 24px 22px #14161e26); }
 .pa3d__view { overflow-x: clip; }
 
 /* ---- informações: os mesmos tamanhos, pesos e cores da página do produto ---- */

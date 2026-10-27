@@ -417,6 +417,7 @@
     this.view.style.color = cs.color;
     var q = function (s) { return self.view.querySelector(s); };
     this.vimg = q("[data-pa3d-vimg]");
+    this.vimg.crossOrigin = "anonymous";
     this.tagList = q("[data-pa3d-colours]");
     this.colourWrap = q("[data-pa3d-colour-wrap]");
     this.colourName = q("[data-pa3d-colour-name]");
@@ -484,6 +485,7 @@
     v.querySelector("[data-pa3d-name]").textContent = p.name;
     this.tags();
     this.refresh();
+    this.preTurn();
   };
 
   /* cor escura: o contorno interno do quadrado selecionado fica mais grosso, como na página do produto */
@@ -518,49 +520,146 @@
     this.tags();
     this.refresh();
     var after = this.photo();
-    if (after !== before) this.swap(after, 0);
+    if (after !== before) this.swap(after, "dye");
+    this.preTurn();
   };
 
-  /* frente ou costas: como nos vídeos de referência, a foto nova aparece por
-     cima da antiga num esmaecer suave, e o cabide balança de leve */
+  /* frente ou costas: a peça gira no cabide como na arara (mesmo WebGL):
+     os ombros viram até ficar de perfil, a barra vem atrasada, e do outro
+     lado aparece a outra face, que assenta balançando um pouco */
   Arara.prototype.flip = function (which) {
     if (which === this.faceSel) return;
+    var from = this.photo();
     this.faceSel = which;
     this.refresh();
-    this.swap(this.photo(), which === "back" ? 1 : -1);
+    this.turn(from, this.photo(), which === "back" ? 1 : -1);
+  };
+
+  /* a foto de perfil só serve se for da mesma cor que está na tela */
+  Arara.prototype.sidePhoto = function () {
+    var p = this.P[this.current], c = colourOf(p, this.colourSel);
+    if (c && (c.front || c.back) && !same(c.name, p.colour)) return null;
+    return p.img.side || null;
+  };
+
+  Arara.prototype.turnGL = function () {
+    if (this.tgl === undefined) {
+      this.tgl = null;
+      if (window.PallacioRailGL && !reduced) {
+        var box = document.createElement("div");
+        box.className = "pa3d__turn";
+        box.hidden = true;
+        this.vimg.parentNode.appendChild(box);
+        var api = window.PallacioRailGL(box, [], reduced);
+        if (api) { api.shadow = false; api.load(); this.tgl = api; this.turnBox = box; this.tcache = {}; }
+      }
+    }
+    return this.tgl;
+  };
+
+  Arara.prototype.garment = function (src, side) {
+    var key = src + "|" + side;
+    if (!this.tcache[key]) {
+      var f = new Image(), s = new Image();
+      f.crossOrigin = s.crossOrigin = "anonymous";
+      f.src = src; s.src = side;
+      this.tcache[key] = this.tgl.add({
+        i: 0, p: { turn: 1 }, front: f, side: s, x: 0, py: 0, lift: 0, yaw: 0, a: 0, b: 0, va: 0,
+        t: 1, vt: 0, th: 1, vth: 0, face: true, hidden: false, Wf: 0, Ws: 0, Hs: 0
+      });
+    }
+    return this.tcache[key];
+  };
+
+  /* deixa as duas faces da cor atual prontas, para o giro começar na hora */
+  Arara.prototype.preTurn = function () {
+    var p = this.P[this.current], c = colourOf(p, this.colourSel), side = this.sidePhoto();
+    if (!side || !this.turnGL()) return;
+    var ph = c && (c.front || c.back) ? c : p.img, self = this;
+    ["front", "back"].forEach(function (k) { if (ph[k]) self.garment(ph[k], side).catch(function () {}); });
   };
 
   Arara.prototype.endTurn = function () {
-    if (this.fade) { this.fade.remove(); this.fade = null; }
+    this.turnId = (this.turnId || 0) + 1;
+    if (this.turnBox) this.turnBox.hidden = true;
+    this.vimg.style.visibility = "";
   };
 
-  Arara.prototype.swap = function (src, sense) {
-    var self = this, img = this.vimg;
+  Arara.prototype.turn = function (from, to, sense) {
+    var self = this, p = this.P[this.current], side = this.sidePhoto();
     this.endTurn();
-    if (reduced || !img.animate) { img.src = src; return; }
-    var next = img.cloneNode(false);
-    next.removeAttribute("data-pa3d-vimg");
-    next.className = "pa3d__vimg pa3d__vimg--next";
-    next.alt = "";
-    next.src = src;
-    this.fade = next;
-    var go = function () {
-      if (self.fade !== next) return;
-      img.parentNode.appendChild(next);
-      var ease = "cubic-bezier(.4,0,.2,1)";
-      next.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, easing: ease, fill: "forwards" }).onfinish = function () {
-        if (self.fade !== next) return;
-        img.src = src;
-        var done = function () { if (self.fade === next) self.endTurn(); };
+    var id = this.turnId;
+    if (!side || !this.turnGL() || from === to) { this.swap(to, "flip", sense); return; }
+    Promise.all([this.garment(from, side), this.garment(to, side)]).then(function (pair) {
+      if (id === self.turnId && self.open) self.runTurn(pair[0], pair[1], sense * (p.turn || 1), to, id);
+    }, function () { if (id === self.turnId) self.swap(to, "flip", sense); });
+  };
+
+  Arara.prototype.runTurn = function (A, B, dir, to, id) {
+    var self = this, img = this.vimg, api = this.tgl, box = this.turnBox;
+    var Hs = img.offsetHeight, Wf = img.offsetWidth;
+    if (!Hs || !Wf) { img.src = to; return; }
+    [A, B].forEach(function (g) {
+      g.Hs = Hs; g.Wf = Wf; g.Ws = g.side.naturalWidth / g.side.naturalHeight * Hs;
+      g.x = Wf / 2; g.py = 0; g.yaw = 0; g.a = g.b = g.va = 0; g.lift = 0; g.vt = g.vth = 0;
+    });
+    /* A vira para um lado até o perfil; B continua o mesmo giro, vindo do perfil */
+    A.p = { turn: dir }; B.p = { turn: -dir };
+    A.t = A.th = 1; A.face = true; A.hidden = false;
+    var swapAt = Math.acos(clamp(A.Ws / A.Wf, 0, 1)) / HALF_PI;
+    box.style.width = Wf + "px"; box.style.height = Hs + "px";
+    api.resize({ w: Wf, h: Hs });
+    var T = 1.05, t0 = performance.now(), last = t0, g = A, phase = 1;
+    function faceOf(g) {
+      var mean = 1 - 0.5 * (g.t + g.th);
+      if (!g.face && mean < swapAt - 0.03) g.face = true;
+      else if (g.face && mean > swapAt + 0.03) g.face = false;
+    }
+    function frame(now) {
+      if (id !== self.turnId) return;
+      var dt = Math.min(0.033, Math.max(0.001, (now - last) / 1000)), el = (now - t0) / 1000;
+      last = now;
+      /* o giro inteiro (frente → perfil → costas) segue uma curva suave de 0 a 2 */
+      var u = clamp(el / T, 0, 1), s = 2 * u * u * (3 - 2 * u);
+      if (phase === 1 && s >= 1) {
+        phase = 2;
+        B.t = 0; B.vt = A.vt; B.th = -A.th; B.vth = -A.vth; B.face = false; B.hidden = false;
+        g = B; img.src = to;
+      }
+      var nt = phase === 1 ? 1 - s : s - 1, prev = g.t;
+      g.t = nt; g.vt = (nt - prev) / dt;
+      /* a barra vem logo atrás dos ombros: mola mais firme que a da arara,
+         para a peça girar inteira, sem torcer, como nos vídeos */
+      for (var k = 0, n = Math.ceil(dt / SUB); k < n; k++) {
+        var h = dt / n, ath = 420 * (g.t - g.th) - 29 * g.vth;
+        g.vth += ath * h; g.th = clamp(g.th + g.vth * h, -0.6, 1.25);
+      }
+      faceOf(g);
+      api.render([g], -1, el);
+      if (box.hidden) { box.hidden = false; img.style.visibility = "hidden"; }
+      if (phase === 2 && u >= 1 && Math.abs(1 - g.th) < 0.004 && Math.abs(g.vth) < 0.03 || el > 3) {
+        g.t = g.th = 1; g.face = true; api.render([g], -1, el);
+        var done = function () { if (id === self.turnId) self.endTurn(); };
         if (img.decode) img.decode().then(done, done); else done();
-      };
-      img.animate([{ opacity: 1 }, { opacity: 0.15 }, { opacity: 1 }], { duration: 420, easing: ease });
-      if (sense) img.parentNode.animate([
-        { transform: "rotate(0deg)" }, { transform: "rotate(" + 1.6 * sense + "deg)", offset: 0.3 },
-        { transform: "rotate(" + -0.7 * sense + "deg)", offset: 0.65 }, { transform: "rotate(0deg)" }
-      ], { duration: 900, easing: "ease-in-out" });
+        return;
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  };
+
+  Arara.prototype.swap = function (src, how, sense) {
+    var img = this.vimg, d = sense || 1, SH = "drop-shadow(0 24px 22px #14161e26)";
+    if (reduced || !img.animate) { img.src = src; return; }
+    /* sem WebGL: giro em 3D pelo CSS, com um leve balanço no fim */
+    var out = how === "flip" ? [{ transform: "perspective(1600px) rotateY(0deg)", filter: SH + " brightness(1)" }, { transform: "perspective(1600px) rotateY(" + 90 * d + "deg)", filter: SH + " brightness(.82)" }] : [{ opacity: 1 }, { opacity: 0 }];
+    var inn = how === "flip" ? [{ transform: "perspective(1600px) rotateY(" + -90 * d + "deg)", filter: SH + " brightness(.82)" }, { transform: "perspective(1600px) rotateY(" + 7 * d + "deg)", filter: SH + " brightness(1)", offset: 0.7 }, { transform: "perspective(1600px) rotateY(0deg)", filter: SH + " brightness(1)" }] : [{ opacity: 0 }, { opacity: 1 }];
+    var a = img.animate(out, { duration: how === "flip" ? 240 : 140, easing: "cubic-bezier(.5,0,.75,0)", fill: "forwards" });
+    a.onfinish = function () {
+      img.src = src;
+      var go = function () { a.cancel(); img.animate(inn, { duration: how === "flip" ? 440 : 220, easing: "cubic-bezier(.16,1,.3,1)" }); };
+      if (img.decode) img.decode().then(go, go); else go();
     };
-    if (next.decode) next.decode().then(go, go); else go();
   };
 
   /* link para a página do produto, já na cor escolhida; Frente/Costas só com as duas fotos */
