@@ -133,7 +133,8 @@ html.pa3d-lock { overflow: hidden; }
 
 /* ---------------- Celular ---------------- */
 @media (max-width: 760px) {
-  .pa3d { --hang: min(42vh, var(--pa3d-h-mob)); --railw: calc(100vw - 48px); }
+  /* a altura também respeita a largura: cada peça de lado cabe na sua vaga, com folga */
+  .pa3d { --railw: calc(100vw - 48px); --hang: min(42vh, var(--pa3d-h-mob), calc((100vw - 48px) / (var(--n) * .34))); }
   .pa3d__head .pa3d__caps:last-child, .pa3d__hint { display: none; }
   .pa3d__rack { padding: 40px 0 24px; }
   .pa3d__rail { --reach: 4px; }
