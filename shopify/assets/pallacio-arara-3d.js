@@ -288,8 +288,10 @@
     return best;
   };
 
+  /* faixa opcional embaixo da arara (nome e preço da peça virada); a section atual não tem */
   Arara.prototype.readout = function () {
     var btn = this.q("[data-pa3d-readout-btn]");
+    if (!btn) return;
     if (this.active < 0) {
       this.q("[data-pa3d-readout-name]").textContent = this.el.getAttribute("data-idle-title") || "";
       this.q("[data-pa3d-readout-sub]").textContent = this.el.getAttribute("data-idle-hint") || "";
@@ -382,7 +384,8 @@
     document.addEventListener("pointerdown", function (e) {
       if (!finePointer.matches && self.active >= 0 && !self.el.contains(e.target) && !self.open) self.setActive(-1);
     });
-    this.q("[data-pa3d-readout-btn]").addEventListener("click", function () { if (self.active >= 0) self.show(self.active); });
+    var readoutBtn = this.q("[data-pa3d-readout-btn]");
+    if (readoutBtn) readoutBtn.addEventListener("click", function () { if (self.active >= 0) self.show(self.active); });
     document.addEventListener("visibilitychange", function () { if (!document.hidden) self.kick(); });
     var resizeT = null;
     addEventListener("resize", function () {

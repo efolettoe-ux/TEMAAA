@@ -27,8 +27,6 @@
   id="pa3d-{{ sid }}"
   class="pa3d"
   data-pa3d
-  data-idle-title="{{ section.settings.mobile_title | escape }}"
-  data-idle-hint="{{ section.settings.mobile_hint | escape }}"
   data-pick="Escolha um tamanho"
   data-add="Adicionar"
   data-unavailable="Esgotado"
@@ -53,10 +51,6 @@
     </div>
   </div>
 
-  <div class="pa3d__readout" aria-live="polite">
-    <div><b data-pa3d-readout-name></b><span data-pa3d-readout-sub></span></div>
-    <button class="pa3d__btn" type="button" data-pa3d-readout-btn hidden>Ver</button>
-  </div>
   {%- if section.settings.hint != blank -%}
     <div class="pa3d__foot"><p class="pa3d__caps pa3d__hint">{{ section.settings.hint | escape }}</p></div>
   {%- endif -%}
@@ -203,8 +197,6 @@
     { "type": "text", "id": "label_left", "label": "Texto à esquerda, em cima" },
     { "type": "text", "id": "label_right", "label": "Texto à direita, em cima" },
     { "type": "text", "id": "hint", "label": "Dica embaixo (desktop)" },
-    { "type": "text", "id": "mobile_title", "label": "Título embaixo (celular)", "default": "A arara" },
-    { "type": "text", "id": "mobile_hint", "label": "Dica embaixo (celular)", "default": "Deslize o dedo pela arara para virar as peças" },
     { "type": "header", "content": "Tamanho" },
     { "type": "range", "id": "height_desktop", "label": "Altura das peças (desktop)", "min": 300, "max": 600, "step": 10, "unit": "px", "default": 440 },
     { "type": "range", "id": "height_mobile", "label": "Altura das peças (celular)", "min": 220, "max": 420, "step": 10, "unit": "px", "default": 320 },
