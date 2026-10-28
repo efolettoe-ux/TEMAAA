@@ -162,8 +162,30 @@
   endif
 -%}
 {%- comment -%} os nomes estão em maiúsculas na loja: no caminho, só a 1ª letra de cada palavra (como na Nude) {%- endcomment -%}
-{%- capture pn_coll_name -%}{%- if pn_collection != blank -%}{%- assign ws = pn_collection.title | downcase | split: ' ' -%}{%- for w in ws -%}{{ w | capitalize }}{%- unless forloop.last %} {% endunless -%}{%- endfor -%}{%- endif -%}{%- endcapture -%}
-{%- capture pn_prod_name -%}{%- assign ws = product.title | downcase | split: ' ' -%}{%- for w in ws -%}{{ w | capitalize }}{%- unless forloop.last %} {% endunless -%}{%- endfor -%}{%- endcapture -%}
+{%- liquid
+  assign pn_coll_name = ''
+  if pn_collection != blank
+    assign ws = pn_collection.title | downcase | split: ' '
+    for w in ws
+      assign cw = w | capitalize
+      if forloop.first
+        assign pn_coll_name = cw
+      else
+        assign pn_coll_name = pn_coll_name | append: ' ' | append: cw
+      endif
+    endfor
+  endif
+  assign pn_prod_name = ''
+  assign ws = product.title | downcase | split: ' '
+  for w in ws
+    assign cw = w | capitalize
+    if forloop.first
+      assign pn_prod_name = cw
+    else
+      assign pn_prod_name = pn_prod_name | append: ' ' | append: cw
+    endif
+  endfor
+-%}
 <nav class="pn-crumb" aria-label="Caminho">
   <ol>
     {%- if pn_collection != blank -%}
