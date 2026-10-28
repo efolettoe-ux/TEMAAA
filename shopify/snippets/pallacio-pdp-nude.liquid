@@ -302,8 +302,19 @@
       gallery._pnPlace = place;
     }
 
+    /* fotos nítidas no desktop: pede a versão grande (como o celular faz) em vez da de 720px */
+    function sharp() {
+      if (!desktop.matches) return;
+      section.querySelectorAll('product-gallery .product-gallery__media img[srcset]').forEach((img) => {
+        if (img.dataset.pnSharp) return;
+        img.dataset.pnSharp = '1';
+        img.sizes = '1500px';
+      });
+    }
+
     function run() {
       busy = true;
+      sharp();
       if (desktop.matches) promo();
       thumbs();
       const g = section.querySelector('.product > product-gallery');
