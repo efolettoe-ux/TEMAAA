@@ -1,0 +1,170 @@
+{%- comment -%}
+  PALLACIO — Página de produto no desktop (≥ 1000px) com o layout da Nude Project:
+  um bloco centralizado de até 1266px com miniaturas em pé à esquerda das fotos,
+  fotos uma embaixo da outra (2:3, coladas no cabeçalho) e uma coluna única de
+  informações à direita, fixa e centralizada na altura da tela enquanto as fotos rolam.
+  Proporções medidas na Nude a 1440px: 111 (miniaturas) · 620 (fotos) · 85 · 450 (info).
+  Só posições e tamanhos de coluna mudam; o visual dos elementos é o do tema.
+  Celular e tablet não mudam. Para voltar ao layout de três colunas: trocar o
+  render 'pallacio-pdp-nude' por 'pallacio-pdp-ermos' em main-product.liquid.
+{%- endcomment -%}
+<style>
+  @media screen and (min-width: 1000px) {
+    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product {
+      --pn-head: var(--sticky-area-height, 72px);
+      grid-template-columns: minmax(0, 111fr) minmax(0, 620fr) minmax(0, 85fr) minmax(0, 450fr) !important;
+      grid-template-rows: auto !important;
+      column-gap: 0 !important;
+      row-gap: 0 !important;
+      align-items: start !important;
+      width: calc(100% - 40px) !important;
+      max-width: 1266px !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+    }
+    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .pallacio-product-left { display: none !important; }
+
+    /* fotos: coluna do meio, uma embaixo da outra, começando logo abaixo do cabeçalho */
+    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > product-gallery {
+      grid-column: 2 !important; grid-row: 1 !important; position: relative; width: 100% !important; margin: 0 !important; padding: 0 !important;
+    }
+    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media-list {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) !important;
+      grid-auto-flow: row !important;
+      gap: 0 !important;
+      overflow: visible !important;
+      transform: none !important;
+      scroll-snap-type: none !important;
+    }
+    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media {
+      grid-column: auto !important;
+      width: 100% !important;
+      max-width: none !important;
+      aspect-ratio: 2 / 3 !important;
+    }
+    /* a galeria vira lista: setas, pontos e contador de slide não fazem sentido */
+    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery :is(.product-gallery__thumbnail-list, .product-gallery__nav, .product-gallery__counter, .pallacio-gallery-counter, page-dots, .page-dots, .product-gallery__ar-wrapper) { display: none !important; }
+
+    /* informações: coluna da direita, fixa e centralizada na altura da tela até o fim das fotos */
+    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) {
+      grid-column: 4 !important;
+      grid-row: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: safe center !important;
+      position: sticky !important;
+      top: var(--pn-head) !important;
+      align-self: start !important;
+      width: 100% !important;
+      height: calc(100vh - var(--pn-head)) !important;
+      min-height: 0 !important;
+      max-height: calc(100vh - var(--pn-head)) !important;
+      margin: 0 !important;
+      padding: 32px 0 !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      scrollbar-width: none;
+    }
+    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left)::-webkit-scrollbar { display: none; }
+    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > * { flex-shrink: 0; }
+
+    /* miniaturas em pé, 10px à esquerda das fotos, na parte de baixo da tela (como na Nude) */
+    #shopify-section-{{ section.id }} .pn-thumbs { position: absolute; top: 0; bottom: 0; right: calc(100% + 10px); width: 54px; z-index: 3; pointer-events: none; }
+    #shopify-section-{{ section.id }} .pn-thumbs__in {
+      position: sticky; top: var(--pn-head); height: calc(100vh - var(--pn-head)); box-sizing: border-box; padding: 24px 0 112px;
+      display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
+    }
+    #shopify-section-{{ section.id }} .pn-thumbs__scroll { display: flex; flex-direction: column; gap: 8px; max-height: 100%; overflow-y: auto; scrollbar-width: none; pointer-events: auto; }
+    #shopify-section-{{ section.id }} .pn-thumbs__scroll::-webkit-scrollbar { display: none; }
+    #shopify-section-{{ section.id }} .pn-thumbs button {
+      all: unset; box-sizing: border-box; display: block; flex: 0 0 auto; width: 54px; aspect-ratio: 2 / 3; cursor: pointer;
+      background: #f9f9f9; border: 1px solid transparent; opacity: .55; transition: opacity .2s ease, border-color .2s ease;
+    }
+    #shopify-section-{{ section.id }} .pn-thumbs button img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    #shopify-section-{{ section.id }} .pn-thumbs button:hover { opacity: .85; }
+    #shopify-section-{{ section.id }} .pn-thumbs button[aria-current="true"] { opacity: 1; border-color: #0b0b0b; }
+
+    /* selo "Leve 3 Pague 2" sai de cima da foto e fica no topo das informações */
+    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .pallacio-gallery-promo-badge { display: none !important; }
+    #shopify-section-{{ section.id }} .pn-promo { display: flex; margin-bottom: 14px; }
+    #shopify-section-{{ section.id }} .pn-promo .pallacio-gallery-promo-badge { display: inline-flex !important; position: static !important; inset: auto !important; transform: none !important; margin: 0 !important; }
+
+    /* sem barras flutuantes de comprar no desktop: a coluna da direita já fica fixa */
+    product-quick-add.product-quick-add, .pallacio-sticky-product-atc { display: none !important; }
+  }
+  @media screen and (max-width: 999px) {
+    #shopify-section-{{ section.id }} :is(.pn-thumbs, .pn-promo) { display: none !important; }
+  }
+</style>
+
+<script>
+  (() => {
+    const section = document.getElementById('shopify-section-{{ section.id }}');
+    if (!section) return;
+    const desktop = window.matchMedia('(min-width: 1000px)');
+    let busy = false, io;
+
+    function promo() {
+      const right = section.querySelector('.product > .product-info:not(.pallacio-product-left)');
+      const badge = section.querySelector('product-gallery .pallacio-gallery-promo-badge');
+      if (!right || !badge || right.querySelector(':scope > .pn-promo')) return;
+      const box = document.createElement('div');
+      box.className = 'pn-promo';
+      box.appendChild(badge.cloneNode(true));
+      right.prepend(box);
+    }
+
+    /* miniaturas: uma por foto visível; ao clicar, a página rola até a foto */
+    function thumbs() {
+      const gallery = section.querySelector('.product > product-gallery');
+      if (!gallery) return;
+      let rail = gallery.querySelector(':scope > .pn-thumbs');
+      if (!desktop.matches) { rail?.remove(); return; }
+      const items = Array.from(gallery.querySelectorAll('.product-gallery__media:not([hidden])')).filter((m) => m.querySelector('img'));
+      const key = items.map((m) => m.dataset.mediaId || m.querySelector('img').getAttribute('src')).join('|');
+      if (rail && rail.dataset.key === key) return;
+      if (!rail) {
+        rail = document.createElement('div');
+        rail.className = 'pn-thumbs';
+        rail.innerHTML = '<div class="pn-thumbs__in"><div class="pn-thumbs__scroll"></div></div>';
+        gallery.prepend(rail);
+      }
+      rail.dataset.key = key;
+      const list = rail.querySelector('.pn-thumbs__scroll');
+      list.replaceChildren(...items.map((item, i) => {
+        const img = item.querySelector('img'), b = document.createElement('button');
+        const src = img.currentSrc || img.src || '';
+        b.type = 'button';
+        b.setAttribute('aria-label', 'Ver foto ' + (i + 1));
+        b.innerHTML = '<img alt="" loading="lazy" src="' + (/[?&]width=\d+/.test(src) ? src.replace(/([?&])width=\d+/, '$1width=120') : src + (src.includes('?') ? '&' : '?') + 'width=120') + '">';
+        b.addEventListener('click', () => {
+          const head = parseFloat(getComputedStyle(section).getPropertyValue('--sticky-area-height')) || 72;
+          window.scrollTo({ top: item.getBoundingClientRect().top + window.scrollY - head, behavior: 'smooth' });
+        });
+        b._pnItem = item;
+        return b;
+      }));
+      io?.disconnect();
+      io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) list.querySelectorAll('button').forEach((b) => b.setAttribute('aria-current', b._pnItem === e.target ? 'true' : 'false'));
+        });
+      }, { rootMargin: '-45% 0px -45% 0px' });
+      items.forEach((m) => io.observe(m));
+    }
+
+    function run() {
+      busy = true;
+      if (desktop.matches) promo();
+      thumbs();
+      busy = false;
+    }
+
+    run();
+    desktop.addEventListener('change', run);
+    /* troca de cor re-renderiza a galeria e as informações: refaz selo e miniaturas */
+    new MutationObserver(() => { if (!busy) requestAnimationFrame(run); }).observe(section, { childList: true, subtree: true });
+  })();
+</script>
