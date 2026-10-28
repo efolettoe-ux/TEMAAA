@@ -30,9 +30,7 @@
       grid-column: 2 !important; grid-row: 1 !important; align-self: start !important; position: relative; width: 100% !important; margin: 0 !important; padding: 0 !important;
     }
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media-list {
-      display: grid !important;
-      grid-template-columns: minmax(0, 1fr) !important;
-      grid-auto-flow: row !important;
+      display: block !important;
       gap: 0 !important;
       transform: none !important;
       scroll-snap-type: none !important;
@@ -47,9 +45,14 @@
     }
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media-list::-webkit-scrollbar { display: none; }
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media[class] {
+      display: block !important;
       grid-column: auto !important;
       width: 100% !important;
       max-width: none !important;
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      flex: none !important;
       aspect-ratio: 2 / 3 !important;
     }
     /* a galeria vira lista: setas, pontos e contador de slide não fazem sentido */
