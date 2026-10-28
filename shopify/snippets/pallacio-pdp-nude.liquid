@@ -1,8 +1,9 @@
 {%- comment -%}
   PALLACIO — Página de produto no desktop (≥ 1000px) com o layout da Nude Project:
   um bloco centralizado de até 1266px com miniaturas em pé à esquerda das fotos,
-  fotos uma embaixo da outra (2:3, coladas no cabeçalho) e uma coluna única de
-  informações à direita, fixa e centralizada na altura da tela enquanto as fotos rolam.
+  fotos uma embaixo da outra (2:3, coladas no cabeçalho) num quadro da altura da tela
+  e uma coluna única de informações à direita, centralizada na altura.
+  Como na Nude: com o mouse sobre as fotos, a rolagem passa as fotos; fora delas, rola a página.
   Proporções medidas na Nude a 1440px: 111 (miniaturas) · 620 (fotos) · 85 · 450 (info).
   Só posições e tamanhos de coluna mudam; o visual dos elementos é o do tema.
   Celular e tablet não mudam. Para voltar ao layout de três colunas: trocar o
@@ -16,7 +17,7 @@
       grid-template-rows: auto !important;
       column-gap: 0 !important;
       row-gap: 0 !important;
-      align-items: start !important;
+      align-items: center !important;
       width: calc(100% - 40px) !important;
       max-width: 1266px !important;
       margin: 0 auto !important;
@@ -26,17 +27,25 @@
 
     /* fotos: coluna do meio, uma embaixo da outra, começando logo abaixo do cabeçalho */
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > product-gallery {
-      grid-column: 2 !important; grid-row: 1 !important; position: relative; width: 100% !important; margin: 0 !important; padding: 0 !important;
+      grid-column: 2 !important; grid-row: 1 !important; align-self: start !important; position: relative; width: 100% !important; margin: 0 !important; padding: 0 !important;
     }
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media-list {
       display: grid !important;
       grid-template-columns: minmax(0, 1fr) !important;
       grid-auto-flow: row !important;
       gap: 0 !important;
-      overflow: visible !important;
       transform: none !important;
       scroll-snap-type: none !important;
+      /* quadro da altura da tela que rola por dentro; ao chegar no fim não passa a rolagem para a página */
+      position: relative !important;
+      height: calc(100vh - var(--pn-head)) !important;
+      max-height: none !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      overscroll-behavior: contain !important;
+      scrollbar-width: none !important;
     }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media-list::-webkit-scrollbar { display: none; }
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media[class] {
       grid-column: auto !important;
       width: 100% !important;
@@ -46,17 +55,16 @@
     /* a galeria vira lista: setas, pontos e contador de slide não fazem sentido */
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery :is(.product-gallery__thumbnail-list, .product-gallery__nav, .product-gallery__counter, .pallacio-gallery-counter, page-dots, .page-dots) { display: none !important; }
 
-    /* informações: coluna da direita, fixa e centralizada na altura da tela até o fim das fotos */
+    /* informações: coluna da direita, centralizada na altura do quadro das fotos */
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) {
       grid-column: 4 !important;
       grid-row: 1 !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: flex-start !important;
-      /* fixa no meio da tela; se for mais alta que a tela, rola junto até o fim dela aparecer e então para */
-      position: sticky !important;
-      top: var(--pn-top, var(--pn-head)) !important;
-      align-self: start !important;
+      position: relative !important;
+      top: auto !important;
+      align-self: center !important;
       width: 100% !important;
       height: auto !important;
       min-height: 0 !important;
@@ -72,7 +80,7 @@
     /* miniaturas em pé, 10px à esquerda das fotos, na parte de baixo da tela (como na Nude) */
     #shopify-section-{{ section.id }} .pn-thumbs { position: absolute; top: 0; bottom: 0; right: calc(100% + 10px); width: 54px; z-index: 3; pointer-events: none; }
     #shopify-section-{{ section.id }} .pn-thumbs__in {
-      position: sticky; top: var(--pn-head); height: calc(100vh - var(--pn-head)); box-sizing: border-box; padding: 24px 0 112px;
+      height: 100%; box-sizing: border-box; padding: 24px 0 112px;
       display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
     }
     #shopify-section-{{ section.id }} .pn-thumbs__scroll { display: flex; flex-direction: column; gap: 8px; max-height: 100%; overflow-y: auto; scrollbar-width: none; pointer-events: auto; }
@@ -90,7 +98,7 @@
     #shopify-section-{{ section.id }} .pn-promo { display: flex; margin-bottom: 14px; }
     #shopify-section-{{ section.id }} .pn-promo .pallacio-gallery-promo-badge { display: inline-flex !important; position: static !important; inset: auto !important; transform: none !important; margin: 0 !important; }
 
-    /* sem barras flutuantes de comprar no desktop: a coluna da direita já fica fixa */
+    /* sem barras flutuantes de comprar no desktop: o botão já aparece junto das fotos */
     product-quick-add.product-quick-add, .pallacio-sticky-product-atc { display: none !important; }
   }
   @media screen and (max-width: 999px) {
@@ -139,8 +147,8 @@
         b.setAttribute('aria-label', 'Ver foto ' + (i + 1));
         b.innerHTML = '<img alt="" loading="lazy" src="' + (/[?&]width=\d+/.test(src) ? src.replace(/([?&])width=\d+/, '$1width=120') : src + (src.includes('?') ? '&' : '?') + 'width=120') + '">';
         b.addEventListener('click', () => {
-          const head = parseFloat(getComputedStyle(section).getPropertyValue('--sticky-area-height')) || 72;
-          window.scrollTo({ top: item.getBoundingClientRect().top + window.scrollY - head, behavior: 'smooth' });
+          const box = item.closest('.product-gallery__media-list');
+          if (box) box.scrollTo({ top: item.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop, behavior: 'smooth' });
         });
         b._pnItem = item;
         return b;
@@ -150,36 +158,15 @@
         entries.forEach((e) => {
           if (e.isIntersecting) list.querySelectorAll('button').forEach((b) => b.setAttribute('aria-current', b._pnItem === e.target ? 'true' : 'false'));
         });
-      }, { rootMargin: '-45% 0px -45% 0px' });
+      }, { root: gallery.querySelector('.product-gallery__media-list'), rootMargin: '-45% 0px -45% 0px' });
       items.forEach((m) => io.observe(m));
-    }
-
-    /* altura de parada da coluna de informações */
-    function pin() {
-      const info = section.querySelector('.product > .product-info:not(.pallacio-product-left)');
-      if (!info) return;
-      if (!desktop.matches) { info.style.removeProperty('--pn-top'); return; }
-      const head = parseFloat(getComputedStyle(section).getPropertyValue('--sticky-area-height')) || 72;
-      const box = info.getBoundingClientRect();
-      let bottom = box.bottom;
-      Array.from(info.children).forEach((c) => { if (c.offsetParent !== null) bottom = Math.max(bottom, c.getBoundingClientRect().bottom); });
-      const pad = parseFloat(getComputedStyle(info).paddingBottom) || 0;
-      const avail = window.innerHeight - head, h = Math.max(info.offsetHeight, info.scrollHeight, bottom - box.top + pad);
-      const top = h <= avail ? head + (avail - h) / 2 : window.innerHeight - h;
-      info.style.setProperty('--pn-top', Math.round(top) + 'px');
     }
 
     function run() {
       busy = true;
       if (desktop.matches) promo();
       thumbs();
-      pin();
       busy = false;
-    }
-    window.addEventListener('resize', pin);
-    if (window.ResizeObserver) {
-      const watch = () => { const info = section.querySelector('.product > .product-info:not(.pallacio-product-left)'); if (info) new ResizeObserver(pin).observe(info); };
-      watch();
     }
 
     run();
