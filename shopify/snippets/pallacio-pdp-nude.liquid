@@ -158,8 +158,10 @@
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .pn-promo { display: flex; margin: 0 0 14px !important; }
     #shopify-section-{{ section.id }} .pn-promo .pallacio-gallery-promo-badge { display: inline-flex !important; position: static !important; inset: auto !important; transform: none !important; margin: 0 !important; }
 
-    html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group store-header.header { box-shadow: inset 0 -1px 0 #000 !important; }
-    @media (min-resolution: 2dppx) { html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group store-header.header { box-shadow: inset 0 -.5px 0 #000 !important; } }
+    /* linha preta fina no fim do cabeçalho (como na Nude), desenhada por cima do conteúdo dele */
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group store-header.header { position: relative; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group store-header.header::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: #000; z-index: 50; pointer-events: none; }
+    @media (min-resolution: 2dppx) { html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group store-header.header::after { transform: scaleY(.5); transform-origin: 0 100%; } }
 
     /* cabeçalho: mantém o logo escrito ao rolar (sem trocar pelo ícone) */
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group .header .pallacio-scroll-brand[data-symbol] .pallacio-scroll-brand__wordmark { opacity: 1 !important; }
