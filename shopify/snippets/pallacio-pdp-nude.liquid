@@ -87,15 +87,53 @@
       height: 100%; box-sizing: border-box; padding: 24px 0 112px;
       display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
     }
-    #shopify-section-{{ section.id }} .pn-thumbs__scroll { display: flex; flex-direction: column; gap: 8px; max-height: 100%; overflow-y: auto; scrollbar-width: none; pointer-events: auto; }
+    #shopify-section-{{ section.id }} .pn-thumbs__scroll { display: flex; flex-direction: column; gap: 0; max-height: 100%; overflow-y: auto; scrollbar-width: none; pointer-events: auto; }
     #shopify-section-{{ section.id }} .pn-thumbs__scroll::-webkit-scrollbar { display: none; }
     #shopify-section-{{ section.id }} .pn-thumbs button {
       all: unset; box-sizing: border-box; display: block; flex: 0 0 auto; width: 54px; aspect-ratio: 2 / 3; cursor: pointer;
-      background: #f9f9f9; border: 1px solid transparent; opacity: .55; transition: opacity .2s ease, border-color .2s ease;
+      background: transparent; border: 0; opacity: .4; transition: opacity .2s ease;
     }
-    #shopify-section-{{ section.id }} .pn-thumbs button img { width: 100%; height: 100%; object-fit: contain; display: block; }
-    #shopify-section-{{ section.id }} .pn-thumbs button:hover { opacity: .85; }
-    #shopify-section-{{ section.id }} .pn-thumbs button[aria-current="true"] { opacity: 1; border-color: #0b0b0b; }
+    #shopify-section-{{ section.id }} .pn-thumbs button img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    #shopify-section-{{ section.id }} .pn-thumbs button:hover { opacity: .7; }
+    #shopify-section-{{ section.id }} .pn-thumbs button[aria-current="true"] { opacity: 1; }
+
+    /* linha de progresso das fotos, 11px para dentro da foto, na altura das miniaturas (como na Nude) */
+    #shopify-section-{{ section.id }} .pn-line { position: absolute; left: 11px; width: 2px; z-index: 3; border-radius: 20px; background: rgba(17, 17, 17, .12); pointer-events: none; }
+    #shopify-section-{{ section.id }} .pn-line i { position: absolute; left: 0; top: 0; width: 100%; border-radius: inherit; background: #111; transition: transform .25s ease; }
+
+    /* caminho no canto superior esquerdo (como na Nude) */
+    #shopify-section-{{ section.id }} { position: relative; }
+    #shopify-section-{{ section.id }} .pn-crumb { position: absolute; top: 12px; left: 18px; z-index: 10; mix-blend-mode: difference; }
+    #shopify-section-{{ section.id }} .pn-crumb ol { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; padding: 0; list-style: none; }
+    #shopify-section-{{ section.id }} .pn-crumb li, #shopify-section-{{ section.id }} .pn-crumb a {
+      color: #fff !important; font-size: 10px !important; line-height: 14px !important; letter-spacing: -.02em; text-transform: none; text-decoration: none !important;
+    }
+    #shopify-section-{{ section.id }} .pn-crumb a:hover { text-decoration: underline !important; text-underline-offset: 2px; }
+
+    /* tamanhos e distâncias da Nude (1440px): título 24/28, preço 16/24, textos de opção 13,
+       tamanhos 14, botão 50px, abas de 36px; 40px entre grupos e 20px até o botão */
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) { gap: 0 !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > .product-info__block-item { margin: 0 !important; padding: 0 !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > [data-block-type="separator"] { display: none !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .product-info__title { font-size: 24px !important; line-height: 28px !important; margin: 0 !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > [data-block-type="price"] { margin-top: 4px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > [data-block-type="price"] :is(sale-price, compare-at-price, .price-list) { font-size: 16px !important; line-height: 24px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > [data-block-type="variant-picker"] { margin-top: 40px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .variant-picker { row-gap: 40px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .variant-picker__option-info, html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .variant-picker__option-info :is(legend, span, .pallacio-color-caption) { font-size: 13px !important; line-height: 14px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .variant-picker__option--color .variant-picker__option-info { margin-bottom: 12px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .variant-picker__option--size .variant-picker__option-info { margin-bottom: 20px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .variant-picker__option-values { margin-top: 0 !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) fieldset.variant-picker__option--size .block-swatch { font-size: 14px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > .product-info__block-item:has(.pallacio-stock) { margin-top: 20px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .pallacio-stock, html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .pallacio-stock * { font-size: 12px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > [data-block-type="buy-buttons"] { margin-top: 20px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .product-info__buy-buttons :is(.button, button[type="submit"]) { height: 50px !important; min-height: 50px !important; padding-block: 0 !important; font-size: 14px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > .product-info__block-item:has(.pallacio-social-proof) { margin-top: 10px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > .product-info__block-item:has(.pallacio-product-accordions) { margin-top: 40px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .pallacio-product-accordion__summary { height: 36px !important; min-height: 36px !important; padding-block: 0 !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .pallacio-product-accordion__title, html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .pallacio-product-accordion__title * { font-size: 14px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .pallacio-product-accordion__arrow { width: 10px !important; height: 10px !important; }
 
     /* selo "Leve 3 Pague 2" sai de cima da foto e fica no topo das informações */
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .pallacio-gallery-promo-badge { display: none !important; }
@@ -106,9 +144,25 @@
     product-quick-add.product-quick-add, .pallacio-sticky-product-atc { display: none !important; }
   }
   @media screen and (max-width: 999px) {
-    #shopify-section-{{ section.id }} :is(.pn-thumbs, .pn-promo) { display: none !important; }
+    #shopify-section-{{ section.id }} :is(.pn-thumbs, .pn-promo, .pn-line, .pn-crumb) { display: none !important; }
   }
 </style>
+
+{%- liquid
+  assign pn_collection = collection
+  if pn_collection == blank
+    assign pn_collection = product.collections.first
+  endif
+-%}
+<nav class="pn-crumb" aria-label="Caminho">
+  <ol>
+    {%- if pn_collection != blank -%}
+      <li><a href="{{ pn_collection.url }}">{{ pn_collection.title | escape }}</a></li>
+      <li aria-hidden="true">/</li>
+    {%- endif -%}
+    <li aria-current="page">{{ product.title | escape }}</li>
+  </ol>
+</nav>
 
 <script>
   (() => {
@@ -157,6 +211,7 @@
         b._pnItem = item;
         return b;
       }));
+      line(gallery, list, items);
       io?.disconnect();
       io = new IntersectionObserver((entries) => {
         entries.forEach((e) => {
@@ -166,10 +221,33 @@
       items.forEach((m) => io.observe(m));
     }
 
+    /* linha ao lado das miniaturas: trecho escuro = foto atual */
+    function line(gallery, list, items) {
+      let el = gallery.querySelector(':scope > .pn-line');
+      if (!el) { el = document.createElement('div'); el.className = 'pn-line'; el.innerHTML = '<i></i>'; gallery.appendChild(el); }
+      const box = gallery.querySelector('.product-gallery__media-list');
+      const place = () => {
+        const g = gallery.getBoundingClientRect(), t = list.getBoundingClientRect();
+        el.style.top = Math.round(t.top - g.top) + 'px';
+        el.style.height = Math.round(t.height) + 'px';
+        const seg = t.height / Math.max(1, items.length);
+        el.firstElementChild.style.height = seg + 'px';
+        const max = box ? box.scrollHeight - box.clientHeight : 0;
+        const k = max > 0 ? box.scrollTop / max : 0;
+        el.firstElementChild.style.transform = 'translateY(' + Math.round(k * (t.height - seg)) + 'px)';
+      };
+      place();
+      if (box && !box._pnLine) { box._pnLine = true; box.addEventListener('scroll', () => requestAnimationFrame(place), { passive: true }); }
+      if (!gallery._pnLineResize) { gallery._pnLineResize = true; window.addEventListener('resize', () => requestAnimationFrame(place)); }
+      gallery._pnPlace = place;
+    }
+
     function run() {
       busy = true;
       if (desktop.matches) promo();
       thumbs();
+      const g = section.querySelector('.product > product-gallery');
+      if (g && g._pnPlace) g._pnPlace();
       busy = false;
     }
 
