@@ -106,7 +106,7 @@
     #shopify-section-{{ section.id }} .pn-crumb { position: absolute; top: 12px; left: 18px; z-index: 10; mix-blend-mode: difference; }
     #shopify-section-{{ section.id }} .pn-crumb ol { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; padding: 0; list-style: none; }
     #shopify-section-{{ section.id }} .pn-crumb li, #shopify-section-{{ section.id }} .pn-crumb a {
-      color: #fff !important; font-size: 10px !important; line-height: 14px !important; letter-spacing: -.02em; text-transform: none; text-decoration: none !important;
+      color: #fff !important; font-size: 10px !important; line-height: 14px !important; letter-spacing: -.02em !important; text-transform: none !important; text-decoration: none !important;
     }
     #shopify-section-{{ section.id }} .pn-crumb a:hover { text-decoration: underline !important; text-underline-offset: 2px; }
 
@@ -124,7 +124,7 @@
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .variant-picker__option--color .variant-picker__option-info { margin-bottom: 12px !important; }
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .variant-picker__option--size .variant-picker__option-info { margin-bottom: 20px !important; }
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .variant-picker__option-values { margin-top: 0 !important; }
-    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) fieldset.variant-picker__option--size .block-swatch { font-size: 14px !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) fieldset.variant-picker__option--size .block-swatch, html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) fieldset.variant-picker__option--size .block-swatch * { font-size: 14px !important; }
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > .product-info__block-item:has(.pallacio-stock) { margin-top: 20px !important; }
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .pallacio-stock, html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) .pallacio-stock * { font-size: 12px !important; }
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > [data-block-type="buy-buttons"] { margin-top: 20px !important; }
@@ -150,8 +150,15 @@
 
 {%- liquid
   assign pn_collection = collection
-  if pn_collection == blank
-    assign pn_collection = product.collections.first
+  if pn_collection == blank or pn_collection.handle == 'all'
+    assign pn_collection = blank
+    for c in product.collections
+      assign c_title = c.title | downcase
+      unless c.handle == 'all' or c_title contains 'todos' or c_title contains 'all products'
+        assign pn_collection = c
+        break
+      endunless
+    endfor
   endif
 -%}
 <nav class="pn-crumb" aria-label="Caminho">
