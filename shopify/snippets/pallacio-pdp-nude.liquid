@@ -160,7 +160,11 @@
       if (!info) return;
       if (!desktop.matches) { info.style.removeProperty('--pn-top'); return; }
       const head = parseFloat(getComputedStyle(section).getPropertyValue('--sticky-area-height')) || 72;
-      const avail = window.innerHeight - head, h = info.offsetHeight;
+      const box = info.getBoundingClientRect();
+      let bottom = box.bottom;
+      Array.from(info.children).forEach((c) => { if (c.offsetParent !== null) bottom = Math.max(bottom, c.getBoundingClientRect().bottom); });
+      const pad = parseFloat(getComputedStyle(info).paddingBottom) || 0;
+      const avail = window.innerHeight - head, h = Math.max(info.offsetHeight, info.scrollHeight, bottom - box.top + pad);
       const top = h <= avail ? head + (avail - h) / 2 : window.innerHeight - h;
       info.style.setProperty('--pn-top', Math.round(top) + 'px');
     }
