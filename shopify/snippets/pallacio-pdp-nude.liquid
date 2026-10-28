@@ -20,7 +20,8 @@
       align-items: center !important;
       width: calc(100% - 40px) !important;
       max-width: 1266px !important;
-      margin: 0 auto !important;
+      /* bloco puxado para a direita: sobra menos espaço à direita que à esquerda */
+      margin: 0 max(20px, calc((100% - 1266px) / 2 - 140px)) 0 auto !important;
       padding: 0 !important;
     }
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .pallacio-product-left { display: none !important; }
