@@ -10,7 +10,7 @@
 {%- endcomment -%}
 <style>
   @media screen and (min-width: 1000px) {
-    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product {
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product {
       --pn-head: var(--sticky-area-height, 72px);
       grid-template-columns: minmax(0, 111fr) minmax(0, 620fr) minmax(0, 85fr) minmax(0, 450fr) !important;
       grid-template-rows: auto !important;
@@ -22,13 +22,13 @@
       margin: 0 auto !important;
       padding: 0 !important;
     }
-    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .pallacio-product-left { display: none !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .pallacio-product-left { display: none !important; }
 
     /* fotos: coluna do meio, uma embaixo da outra, começando logo abaixo do cabeçalho */
-    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > product-gallery {
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > product-gallery {
       grid-column: 2 !important; grid-row: 1 !important; position: relative; width: 100% !important; margin: 0 !important; padding: 0 !important;
     }
-    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media-list {
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media-list {
       display: grid !important;
       grid-template-columns: minmax(0, 1fr) !important;
       grid-auto-flow: row !important;
@@ -37,17 +37,17 @@
       transform: none !important;
       scroll-snap-type: none !important;
     }
-    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media[class] {
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media[class] {
       grid-column: auto !important;
       width: 100% !important;
       max-width: none !important;
       aspect-ratio: 2 / 3 !important;
     }
     /* a galeria vira lista: setas, pontos e contador de slide não fazem sentido */
-    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery :is(.product-gallery__thumbnail-list, .product-gallery__nav, .product-gallery__counter, .pallacio-gallery-counter, page-dots, .page-dots) { display: none !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery :is(.product-gallery__thumbnail-list, .product-gallery__nav, .product-gallery__counter, .pallacio-gallery-counter, page-dots, .page-dots) { display: none !important; }
 
     /* informações: coluna da direita, fixa e centralizada na altura da tela até o fim das fotos */
-    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) {
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) {
       grid-column: 4 !important;
       grid-row: 1 !important;
       display: flex !important;
@@ -66,8 +66,8 @@
       box-sizing: border-box !important;
       overflow: visible !important;
     }
-    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left)::-webkit-scrollbar { display: none; }
-    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > * { flex-shrink: 0; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left)::-webkit-scrollbar { display: none; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > * { flex-shrink: 0; }
 
     /* miniaturas em pé, 10px à esquerda das fotos, na parte de baixo da tela (como na Nude) */
     #shopify-section-{{ section.id }} .pn-thumbs { position: absolute; top: 0; bottom: 0; right: calc(100% + 10px); width: 54px; z-index: 3; pointer-events: none; }
@@ -86,7 +86,7 @@
     #shopify-section-{{ section.id }} .pn-thumbs button[aria-current="true"] { opacity: 1; border-color: #0b0b0b; }
 
     /* selo "Leve 3 Pague 2" sai de cima da foto e fica no topo das informações */
-    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .pallacio-gallery-promo-badge { display: none !important; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .pallacio-gallery-promo-badge { display: none !important; }
     #shopify-section-{{ section.id }} .pn-promo { display: flex; margin-bottom: 14px; }
     #shopify-section-{{ section.id }} .pn-promo .pallacio-gallery-promo-badge { display: inline-flex !important; position: static !important; inset: auto !important; transform: none !important; margin: 0 !important; }
 
