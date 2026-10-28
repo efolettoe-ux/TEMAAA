@@ -137,7 +137,7 @@
 
     /* selo "Leve 3 Pague 2" sai de cima da foto e fica no topo das informações */
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .pallacio-gallery-promo-badge { display: none !important; }
-    #shopify-section-{{ section.id }} .pn-promo { display: flex; margin-bottom: 14px; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .pn-promo { display: flex; margin: 0 0 14px !important; }
     #shopify-section-{{ section.id }} .pn-promo .pallacio-gallery-promo-badge { display: inline-flex !important; position: static !important; inset: auto !important; transform: none !important; margin: 0 !important; }
 
     /* sem barras flutuantes de comprar no desktop: o botão já aparece junto das fotos */
@@ -161,13 +161,16 @@
     endfor
   endif
 -%}
+{%- comment -%} os nomes estão em maiúsculas na loja: no caminho, só a 1ª letra de cada palavra (como na Nude) {%- endcomment -%}
+{%- capture pn_coll_name -%}{%- if pn_collection != blank -%}{%- assign ws = pn_collection.title | downcase | split: ' ' -%}{%- for w in ws -%}{{ w | capitalize }}{%- unless forloop.last %} {% endunless -%}{%- endfor -%}{%- endif -%}{%- endcapture -%}
+{%- capture pn_prod_name -%}{%- assign ws = product.title | downcase | split: ' ' -%}{%- for w in ws -%}{{ w | capitalize }}{%- unless forloop.last %} {% endunless -%}{%- endfor -%}{%- endcapture -%}
 <nav class="pn-crumb" aria-label="Caminho">
   <ol>
     {%- if pn_collection != blank -%}
-      <li><a href="{{ pn_collection.url }}">{{ pn_collection.title | escape }}</a></li>
+      <li><a href="{{ pn_collection.url }}">{{ pn_coll_name | escape }}</a></li>
       <li aria-hidden="true">/</li>
     {%- endif -%}
-    <li aria-current="page">{{ product.title | escape }}</li>
+    <li aria-current="page">{{ pn_prod_name | escape }}</li>
   </ol>
 </nav>
 
