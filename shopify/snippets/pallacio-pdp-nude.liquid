@@ -158,14 +158,9 @@
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .pn-promo { display: flex; margin: 0 0 14px !important; }
     #shopify-section-{{ section.id }} .pn-promo .pallacio-gallery-promo-badge { display: inline-flex !important; position: static !important; inset: auto !important; transform: none !important; margin: 0 !important; }
 
-    /* a área do produto fica numa camada abaixo do cabeçalho, para a linha dele aparecer por cima das fotos */
-    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} { position: relative; z-index: 0 !important; isolation: isolate; }
-    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media-list { position: relative; z-index: 0 !important; }
-
-    /* linha preta fina no fim do cabeçalho (como na Nude): sombra de 1px logo abaixo dele,
-       por cima do conteúdo da página, no topo e ao rolar */
-    html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group:has(store-header.header) { box-shadow: 0 1px 0 #000 !important; }
-    @media (min-resolution: 2dppx) { html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group:has(store-header.header) { box-shadow: 0 .5px 0 #000 !important; } }
+    /* linha preta fina no fim do cabeçalho (como na Nude), fixa na base dele, no topo e ao rolar */
+    #shopify-section-{{ section.id }} .pn-headline { position: fixed; left: 0; right: 0; top: 72px; height: 1px; background: #000; z-index: 999; pointer-events: none; }
+    @media (min-resolution: 2dppx) { #shopify-section-{{ section.id }} .pn-headline { transform: scaleY(.5); transform-origin: 0 0; } }
 
     /* cabeçalho: mantém o logo escrito ao rolar (sem trocar pelo ícone) */
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group .header .pallacio-scroll-brand[data-symbol] .pallacio-scroll-brand__wordmark { opacity: 1 !important; }
@@ -175,7 +170,7 @@
     product-quick-add.product-quick-add, .pallacio-sticky-product-atc { display: none !important; }
   }
   @media screen and (max-width: 999px) {
-    #shopify-section-{{ section.id }} :is(.pn-thumbs, .pn-promo, .pn-line, .pn-crumb) { display: none !important; }
+    #shopify-section-{{ section.id }} :is(.pn-thumbs, .pn-promo, .pn-line, .pn-crumb, .pn-headline) { display: none !important; }
   }
 </style>
 
@@ -217,6 +212,7 @@
     endif
   endfor
 -%}
+<div class="pn-headline" aria-hidden="true"></div>
 <nav class="pn-crumb" aria-label="Caminho">
   <ol>
     {%- if pn_collection != blank -%}
@@ -313,6 +309,19 @@
       if (g && g._pnPlace) g._pnPlace();
       busy = false;
     }
+
+    /* a linha acompanha a base do cabeçalho */
+    const hl = section.querySelector('.pn-headline');
+    const placeLine = () => {
+      const h = document.querySelector('.shopify-section-group-header-group store-header.header');
+      if (!hl || !h) return;
+      const r = h.getBoundingClientRect();
+      hl.style.top = Math.max(0, Math.round(r.bottom)) + 'px';
+      hl.style.opacity = r.bottom > 0 ? '1' : '0';
+    };
+    placeLine();
+    window.addEventListener('scroll', () => requestAnimationFrame(placeLine), { passive: true });
+    window.addEventListener('resize', placeLine);
 
     run();
     desktop.addEventListener('change', run);
