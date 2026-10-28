@@ -160,7 +160,7 @@
 
     /* linha preta fina no fim do cabeçalho (como na Nude), desenhada por cima do conteúdo dele */
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group store-header.header { position: relative; }
-    html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group store-header.header::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: #000; z-index: 50; pointer-events: none; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group store-header.header::after { content: "" !important; display: block !important; visibility: visible !important; opacity: 1 !important; position: absolute !important; left: 0; right: 0; bottom: 0; height: 1px; background: #000; z-index: 50; pointer-events: none; }
     @media (min-resolution: 2dppx) { html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group store-header.header::after { transform: scaleY(.5); transform-origin: 0 100%; } }
 
     /* cabeçalho: mantém o logo escrito ao rolar (sem trocar pelo ícone) */
