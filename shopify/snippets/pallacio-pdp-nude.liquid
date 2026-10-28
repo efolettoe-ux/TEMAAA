@@ -37,7 +37,7 @@
       transform: none !important;
       scroll-snap-type: none !important;
     }
-    html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media {
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media[class] {
       grid-column: auto !important;
       width: 100% !important;
       max-width: none !important;
@@ -52,20 +52,19 @@
       grid-row: 1 !important;
       display: flex !important;
       flex-direction: column !important;
-      justify-content: safe center !important;
+      justify-content: flex-start !important;
+      /* fixa no meio da tela; se for mais alta que a tela, rola junto até o fim dela aparecer e então para */
       position: sticky !important;
-      top: var(--pn-head) !important;
+      top: var(--pn-top, var(--pn-head)) !important;
       align-self: start !important;
       width: 100% !important;
-      height: calc(100vh - var(--pn-head)) !important;
+      height: auto !important;
       min-height: 0 !important;
-      max-height: calc(100vh - var(--pn-head)) !important;
+      max-height: none !important;
       margin: 0 !important;
       padding: 32px 0 !important;
       box-sizing: border-box !important;
-      overflow-x: hidden !important;
-      overflow-y: auto !important;
-      scrollbar-width: none;
+      overflow: visible !important;
     }
     html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left)::-webkit-scrollbar { display: none; }
     html#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .product > .product-info:not(.pallacio-product-left) > * { flex-shrink: 0; }
@@ -155,11 +154,28 @@
       items.forEach((m) => io.observe(m));
     }
 
+    /* altura de parada da coluna de informações */
+    function pin() {
+      const info = section.querySelector('.product > .product-info:not(.pallacio-product-left)');
+      if (!info) return;
+      if (!desktop.matches) { info.style.removeProperty('--pn-top'); return; }
+      const head = parseFloat(getComputedStyle(section).getPropertyValue('--sticky-area-height')) || 72;
+      const avail = window.innerHeight - head, h = info.offsetHeight;
+      const top = h <= avail ? head + (avail - h) / 2 : window.innerHeight - h;
+      info.style.setProperty('--pn-top', Math.round(top) + 'px');
+    }
+
     function run() {
       busy = true;
       if (desktop.matches) promo();
       thumbs();
+      pin();
       busy = false;
+    }
+    window.addEventListener('resize', pin);
+    if (window.ResizeObserver) {
+      const watch = () => { const info = section.querySelector('.product > .product-info:not(.pallacio-product-left)'); if (info) new ResizeObserver(pin).observe(info); };
+      watch();
     }
 
     run();
