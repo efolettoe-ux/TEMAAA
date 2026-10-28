@@ -158,6 +158,10 @@
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} .pn-promo { display: flex; margin: 0 0 14px !important; }
     #shopify-section-{{ section.id }} .pn-promo .pallacio-gallery-promo-badge { display: inline-flex !important; position: static !important; inset: auto !important; transform: none !important; margin: 0 !important; }
 
+    /* a área do produto fica numa camada abaixo do cabeçalho, para a linha dele aparecer por cima das fotos */
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} { position: relative; z-index: 0 !important; isolation: isolate; }
+    html#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront#pallacio-storefront #shopify-section-{{ section.id }} product-gallery .product-gallery__media-list { position: relative; z-index: 0 !important; }
+
     /* linha preta fina no fim do cabeçalho (como na Nude): sombra de 1px logo abaixo dele,
        por cima do conteúdo da página, no topo e ao rolar */
     html#pallacio-storefront#pallacio-storefront#pallacio-storefront .shopify-section-group-header-group:has(store-header.header) { box-shadow: 0 1px 0 #000 !important; }
